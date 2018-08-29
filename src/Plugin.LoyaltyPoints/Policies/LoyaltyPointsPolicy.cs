@@ -11,7 +11,7 @@ namespace Plugin.LoyaltyPoints.Policies
     {
         public LoyaltyPointsPolicy()
         {
-            this.TemplatePromotion = "abc";
+            this.TemplatePromotion = "Entity-Promotion-Habitat_LoyaltyPointsPromotionBook-LoyalyPointsPromotion";
             this.CouponBlockSize = 10;
             this.CouponPrefix = "LP";
         }
