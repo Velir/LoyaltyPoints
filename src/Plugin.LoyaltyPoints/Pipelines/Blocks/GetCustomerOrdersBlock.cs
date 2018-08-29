@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Components;
+using Plugin.LoyaltyPoints.Policies;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Core.Commands;
 using Sitecore.Commerce.Plugin.Carts;
@@ -38,6 +39,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             string listName = string.Format(context.GetPolicy<KnownOrderListsPolicy>().CustomerOrders, customer.Id);
             CommerceList<Order> commerceList = await _findEntitiesInListCommand.Process<Order>(context.CommerceContext, listName, 0, int.MaxValue);
 
+            var loyaltyPointsPolicy = context.GetPolicy<LoyaltyPointsPolicy>();
+
             foreach (var order in commerceList.Items)
             {
                 logger.LogInformation(
@@ -63,9 +66,9 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     // Discovery, this should go to its own pipeline eventually
                     // TODO Mark loyalty points applied, generate coupon, notifiy xConnect (Get contact ID, create event, pass coupon ID)
                     //	 
-                    string promotionId = "Entity-Promotion-Habitat_LoyaltyPointsPromotionBook-LoyalyPointsPromotion";
-                    
-                    string prefix = "LP_";
+                    string promotionId = loyaltyPointsPolicy.TemplatePromotion;
+
+                    string prefix = loyaltyPointsPolicy.CouponPrefix;
                     string suffix = $"_{DateTime.Now.Ticks.ToString().Substring(0,9)}";
                     int total = 1; //TODO Discuss how this could be batched.
 

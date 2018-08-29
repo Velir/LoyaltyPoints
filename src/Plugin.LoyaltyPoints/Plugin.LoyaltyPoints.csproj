@@ -33,7 +33,7 @@
     <Content Include="Pipelines\Arguments\AddLoyaltyPointsArgument.cs" />
     <Content Include="Pipelines\IAddToProductPipeline.cs" />
     <Content Include="Pipelines\AddToProductPipeline.cs" />
-    <Content Include="Policies\SamplePolicy.cs" />
+    <Content Include="Policies\LoyaltyPointsPolicy.cs" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
