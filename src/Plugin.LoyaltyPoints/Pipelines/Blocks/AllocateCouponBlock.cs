@@ -14,8 +14,10 @@ using Sitecore.Commerce.Plugin.Carts;
 using Sitecore.Commerce.Plugin.Catalog;
 using Sitecore.Commerce.Plugin.Coupons;
 using Sitecore.Commerce.Plugin.Orders;
+using Sitecore.Commerce.Plugin.Promotions;
 using Sitecore.Framework.Conditions;
 using Sitecore.Framework.Pipelines;
+using Promotion = Sitecore.Commerce.Plugin.Promotions.Promotion;
 
 namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 {
@@ -23,11 +25,13 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     {
         private readonly FindEntityCommand _findEntityCommmand;
         private readonly PersistEntityCommand _persistEntityCommand;
+        private DuplicatePromotionCommand _duplicatePromotionCommand;
 
-        public AllocateCouponBlock(FindEntityCommand findEntityCommand, PersistEntityCommand persistEntityCommand)
+        public AllocateCouponBlock(FindEntityCommand findEntityCommand, PersistEntityCommand persistEntityCommand, DuplicatePromotionCommand duplicatePromotionCommand)
         {
             _findEntityCommmand = findEntityCommand;
             _persistEntityCommand = persistEntityCommand;
+            _duplicatePromotionCommand = duplicatePromotionCommand;
         }
         public override async Task<AllocateCouponArgument> Run(AllocateCouponArgument arg, CommercePipelineExecutionContext context)
         {
@@ -56,7 +60,21 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
             entity.Id = id;  // Entity is generated with random ID. We want a singleton.
             entity.Lock = true;  // This will prevent duplicate batches from getting created. TODO put access and lock in a transaction.
+            Promotion promotion;
+            if (string.IsNullOrEmpty(entity.CurrentPromotion))
+            {
+                promotion = await CreatePromtion(context.CommerceContext, entity.SequenceNumber++);
+                entity.CurrentPromotion = promotion.FriendlyId;
+            }
+            else
+            {
+                promotion = await GetPromotion(context.CommerceContext, entity.CurrentPromotion);
+            }
 
+            //TODO Next: Check for coupons, create a new coupon if none to allocate.
+
+            
+         
 
             entity = await _persistEntityCommand.Process(context.CommerceContext, entity) as LoyaltyPointsEntity;
 
@@ -91,5 +109,18 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
             return arg;
         }
-}
+
+        private async Task<Promotion> GetPromotion(CommerceContext context, string currentPromotion)
+        {
+            return await this._findEntityCommmand.Process(context, typeof(Promotion), $"Entity-Promotion-{currentPromotion}") as Promotion;
+        }
+
+        private async Task<Promotion> CreatePromtion(CommerceContext context, int sequenceNumber)
+        {
+            string templatePromotion = context.GetPolicy<LoyaltyPointsPolicy>().TemplatePromotion;
+            string suffix = $"-{sequenceNumber}";
+            string newPromotion = $"{templatePromotion.Substring(50-suffix.Length)}{suffix}";
+            return await this._duplicatePromotionCommand.Process(context,templatePromotion, newPromotion) as Promotion;
+        }
+    }
 }
