@@ -26,12 +26,16 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         private readonly FindEntityCommand _findEntityCommmand;
         private readonly PersistEntityCommand _persistEntityCommand;
         private DuplicatePromotionCommand _duplicatePromotionCommand;
+        private readonly AddPrivateCouponCommand _addPrivateCouponCommand;
+        private readonly NewCouponAllocationCommand _newCouponAllocationCommand;
 
-        public AllocateCouponBlock(FindEntityCommand findEntityCommand, PersistEntityCommand persistEntityCommand, DuplicatePromotionCommand duplicatePromotionCommand)
+        public AllocateCouponBlock(FindEntityCommand findEntityCommand, PersistEntityCommand persistEntityCommand, DuplicatePromotionCommand duplicatePromotionCommand, AddPrivateCouponCommand addPrivateCouponCommand, NewCouponAllocationCommand newCouponAllocationCommand)
         {
             _findEntityCommmand = findEntityCommand;
             _persistEntityCommand = persistEntityCommand;
             _duplicatePromotionCommand = duplicatePromotionCommand;
+            _addPrivateCouponCommand = addPrivateCouponCommand;
+            _newCouponAllocationCommand = newCouponAllocationCommand;
         }
         public override async Task<AllocateCouponArgument> Run(AllocateCouponArgument arg, CommercePipelineExecutionContext context)
         {
@@ -65,14 +69,29 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             {
                 promotion = await CreatePromtion(context.CommerceContext, entity.SequenceNumber++);
                 entity.CurrentPromotion = promotion.FriendlyId;
+                promotion = await _addPrivateCouponCommand.Process(context.CommerceContext, promotion.Id, policy.CouponPrefix,
+                    entity.SequenceNumber.ToString(), policy.CouponBlockSize);
             }
             else
             {
                 promotion = await GetPromotion(context.CommerceContext, entity.CurrentPromotion);
             }
 
-            //TODO Next: Check for coupons, create a new coupon if none to allocate.
+            string entityId = $"Entity-PrivateCouponGroup-{policy.CouponPrefix}-{entity.SequenceNumber}";
+            PrivateCouponGroup @group= await _findEntityCommmand.Process(context.CommerceContext,typeof(PrivateCouponGroup), entityId) as PrivateCouponGroup;
+            await _newCouponAllocationCommand.Process(context.CommerceContext, promotion, group, 1);
+            var allocated = group.GetComponent<CouponAllocationComponent>();
+            string coupon = allocated.Codes.First(); //This is always returning the same code.
 
+
+            //NEXT: Each call to CouponAllocationCommand is creating a new CouponAlloctionComponent (which is contrary to how I thought
+            // components worked (like properties). The required logic, which seems ugly, to get the last promotion is:
+            // group.Components.OfType<CouponAllocationComponent>().Skip(AllocationCount -1).First()
+            // and to see if any are left:
+            // Total - Allocation > 0
+            // I'm not sure how to avoid a race condition between two processes: Maybe a read lock on the Group??
+            await _persistEntityCommand.Process(context.CommerceContext, group);
+             
             
          
 
