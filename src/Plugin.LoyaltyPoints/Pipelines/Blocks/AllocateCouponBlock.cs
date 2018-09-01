@@ -21,6 +21,48 @@ using Promotion = Sitecore.Commerce.Plugin.Promotions.Promotion;
 
 namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 {
+
+  
+    /// <summary>
+    /// Design notes:
+    /// This minion is responsible for processing customers, and
+    /// issuing them coupons, and marking the loyalty points applied.
+    ///
+    /// Logically, it depends on a secondary command or pipeline:
+    /// GetLoyaltyPointsCoupon, which is responsible for getting the next
+    /// coupon from a queue.
+    ///
+    /// This could show best practices for managing work queues (managed lists?),
+    /// but that is an extra.
+    ///
+    /// So:
+    /// Get Customer. Pass Customer to command to determine eligibility for
+    /// coupon.
+    /// If yes, pass customer to command to command to get coupon. [Option: prime
+    /// process to ensure coupon.]
+    /// Within transaction:
+    ///   * mark coupon applied by writing a component to the coupon entity
+    ///     that has the customer id,
+    ///   * update orders to mark loyalty points applied (include coupon reference)
+    ///   * add component to customer that contains coupon
+    /// Outside of transaction:
+    ///   * fire live event, mark customer.couponcollection applied.
+    ///
+    /// So new pipelines:
+    ///   * IsCustomerEligibleForCoupon (and block)
+    ///   * GetCouponPipeline (and block, maybe broken up)
+    ///   * ApplyCouponBlock
+    ///
+    /// An alternative approach:
+    ///   * MakeCouponMinion (makes sure there is a queue of coupons)
+    ///   * FindCustomersForLoyaltyPoints (adds a component with coupons to apply)
+    ///   * IssueCouponsMinion
+    ///
+    /// This second approach looks cleaner. And each minion can be scaled as needed.
+    /// All the minions would use Entity-LoyaltyPoints to control things like the
+    /// template promotion.
+    ///
+    /// </summary>
     class AllocateCouponBlock: PipelineBlock<AllocateCouponArgument, AllocateCouponArgument, CommercePipelineExecutionContext>
     {
         private readonly FindEntityCommand _findEntityCommmand;
@@ -83,6 +125,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             var allocated = group.GetComponent<CouponAllocationComponent>();
             string coupon = allocated.Codes.First(); //This is always returning the same code.
 
+             
 
             //NEXT: Each call to CouponAllocationCommand is creating a new CouponAlloctionComponent (which is contrary to how I thought
             // components worked (like properties). The required logic, which seems ugly, to get the last promotion is:
