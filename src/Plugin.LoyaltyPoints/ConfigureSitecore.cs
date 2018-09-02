@@ -52,6 +52,9 @@ namespace Plugin.LoyaltyPoints
                 .AddPipeline<IAllocateCouponPipeline, AllocateCouponPipeline>(
                     configure => { configure.Add<AllocateCouponBlock>(); })
 
+                .AddPipeline<ICreateCouponsPipeline, CreateCouponsPipeline>(
+                    configure => { configure.Add<CreateCouponsBlock>(); })
+
                 .AddPipeline<IApplyLoyaltyPointsMinionPipeline,ApplyLoyaltyPointsMinionPipeline>(configure =>
                     {
                         configure.Add<GetCustomerOrdersBlock>();

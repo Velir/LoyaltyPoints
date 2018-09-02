@@ -100,11 +100,16 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                        });
 
 
-            string id = "Entity-LoyaltyPoints";
-            LoyaltyPointsEntity entity = await _findEntityCommmand.Process(context.CommerceContext, typeof(LoyaltyPointsEntity), id, shouldCreate:true) as LoyaltyPointsEntity;
+            LoyaltyPointsEntity entity = await 
+                _findEntityCommmand.Process(
+                    context.CommerceContext, 
+                    typeof(LoyaltyPointsEntity), 
+                    CommerceEntity.IdPrefix<LoyaltyPointsEntity>(),
+                    shouldCreate:true)
+                as LoyaltyPointsEntity;
 
 
-            entity.Id = id;  // Entity is generated with random ID. We want a singleton.
+            entity.Id = CommerceEntity.IdPrefix<LoyaltyPointsEntity>();  // Entity is generated with random ID. We want a singleton.
             entity.Lock = true;  // This will prevent duplicate batches from getting created. TODO put access and lock in a transaction.
             Promotion promotion;
             if (string.IsNullOrEmpty(entity.CurrentPromotion))
