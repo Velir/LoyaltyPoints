@@ -6,8 +6,9 @@ namespace Plugin.LoyaltyPoints.Pipelines.Entities
     {
         public LoyaltyPointsEntity()
         {
-            SequenceNumber = 26;
+            Id = Constants.EntityId;
         }
+
         public string CurrentPromotion { get; set; }
         public int SequenceNumber { get; set; }
     }

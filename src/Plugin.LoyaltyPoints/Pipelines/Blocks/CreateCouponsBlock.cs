@@ -84,7 +84,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                         _findEntityCommand.Process(
                             context.CommerceContext,
                             typeof(LoyaltyPointsEntity),
-                            CommerceEntity.IdPrefix<LoyaltyPointsEntity>(),
+                            Constants.EntityId,
                             shouldCreate: true)
                     as LoyaltyPointsEntity;
                 LoyaltyPointsPolicy policy = context.CommerceContext.GetPolicy<LoyaltyPointsPolicy>();

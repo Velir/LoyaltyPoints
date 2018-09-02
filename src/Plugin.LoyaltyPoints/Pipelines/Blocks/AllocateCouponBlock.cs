@@ -104,12 +104,12 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 _findEntityCommmand.Process(
                     context.CommerceContext, 
                     typeof(LoyaltyPointsEntity), 
-                    CommerceEntity.IdPrefix<LoyaltyPointsEntity>(),
+                    Constants.EntityId,
                     shouldCreate:true)
                 as LoyaltyPointsEntity;
 
 
-            entity.Id = CommerceEntity.IdPrefix<LoyaltyPointsEntity>();  // Entity is generated with random ID. We want a singleton.
+            entity.Id = Constants.EntityId;  // Entity is generated with random ID. We want a singleton.
             
             Promotion promotion;
             if (string.IsNullOrEmpty(entity.CurrentPromotion))
