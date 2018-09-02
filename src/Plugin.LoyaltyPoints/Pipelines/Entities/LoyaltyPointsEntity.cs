@@ -15,7 +15,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Entities
         public bool Lock { get; set; }
         public string CurrentPromotion { get; set; }
         public int SequenceNumber { get; set; }
-        public long ReprovisionTriggerCount { get; set; }
-        public long ReprovisionBlockSize { get; set; }
+        public int ReprovisionTriggerCount { get; set; }
+        public int ReprovisionBlockSize { get; set; }
     }
 }

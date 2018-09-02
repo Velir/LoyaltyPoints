@@ -40,8 +40,9 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         private readonly FindEntityCommand _findEntityCommand;
         private readonly DuplicatePromotionCommand _duplicatePromotionCommand;
         private readonly AddPrivateCouponCommand _addPrivateCouponCommand;
-        private readonly AddEntityToListsCommand _addEntityToListsCommand;
+        private readonly AddListEntitiesPipeline _addListEntitiesPipeline;
         private readonly PersistEntityCommand _persistEntityCommand;
+        private readonly GetEntitiesInListCommand _getEntitiesInListCommand;
 
         //TODO Break this monster class up. Too many concerns. :(
 
@@ -52,8 +53,9 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             FindEntityCommand findEntityCommand,
             DuplicatePromotionCommand duplicatePromotionCommand,
             AddPrivateCouponCommand addPrivateCouponCommand,
-            AddEntityToListsCommand addEntityToListsCommand,
-            PersistEntityCommand persistEntityCommand
+            AddListEntitiesPipeline addListEntitiesPipeline,
+            PersistEntityCommand persistEntityCommand,
+            GetEntitiesInListCommand getEntitiesInListCommand
             )
         {
             _getManagedListCommand = getManagedListCommand;
@@ -62,8 +64,9 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             _findEntityCommand = findEntityCommand;
             _duplicatePromotionCommand = duplicatePromotionCommand;
             _addPrivateCouponCommand = addPrivateCouponCommand;
-            _addEntityToListsCommand = addEntityToListsCommand;
+            _addListEntitiesPipeline = addListEntitiesPipeline;
             _persistEntityCommand = persistEntityCommand;
+            _getEntitiesInListCommand = getEntitiesInListCommand;
         }
 
         public override async Task<CreateCouponsArgument> Run(
@@ -98,50 +101,70 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 {
                     context.Logger.LogInformation(
                         $"{this.Name}: List {Constants.AvailableCouponsList} is at or under reprovision count of {loyaltyPointsEntity.ReprovisionTriggerCount}.");
-                    var coupons = await AddCoupons(context.CommerceContext, loyaltyPointsEntity);
-                    List<string> couponList = new List<string> { { Constants.AvailableCouponsList } };
-                    foreach (var coupon in coupons)
-                    {
-                        await _addEntityToListsCommand.Process(context.CommerceContext, coupon.Id, couponList);
-                    }
+                    await AddCoupons(context.CommerceContext, loyaltyPointsEntity);
+                    await CopyCouponsToList(context, loyaltyPointsEntity, list);
+
+                    
 
                     await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
                     await _persistEntityCommand.Process(context.CommerceContext, list);
 
+                     
                 }
-
             });
+
+            // Note: I'm not sure if there is a way to ensure this minion is
+            // a singleton (I think that's unlikely as someone could 
+            // always spin up another minion server, so it is necessary to
+            // add the coupons to the coupon list inside a transaction,
+            // to avoid duplicate insertions.
+            
+            // TODO Discuss deadlock avoidance patterns with Rob.
 
             return arg;
         }
 
-        private async Task<List<CommerceEntity>> AddCoupons(CommerceContext context, LoyaltyPointsEntity entity)
+        private async Task CopyCouponsToList(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity, ManagedList list)
+        {
+            var policy = context.GetPolicy<LoyaltyPointsPolicy>();
+            var coupons = await _getEntitiesInListCommand.Process(context.CommerceContext,
+                $"promotions-unallocated-{policy.CouponPrefix}-{entity.SequenceNumber}", 0,
+                entity.ReprovisionBlockSize);
+            await _addListEntitiesPipeline.Run(new ListEntitiesArgument(coupons, list.Name), context);
+        }
+
+        
+
+        private async Task AddCoupons(CommerceContext context, LoyaltyPointsEntity entity)
         {
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
 
             entity.SequenceNumber++;
             string suffix = entity.SequenceNumber.ToString();
             var promotion = await CreatePromtion(context, suffix);
+            if (promotion == null)
+            {
+                //TODO Review against patterns.
+                context.AddMessage(new CommandMessage{Text=$"{this.Name}: Unable to generate LoyaltyPoints promotion."});
+            }
             entity.CurrentPromotion = promotion.FriendlyId;
 
-            string entityId = string.Format("{0}{1}-{2}",
-                CommerceEntity.IdPrefix<PrivateCouponGroup>(),
-                policy.CouponPrefix,
-                suffix);
+       
             await _addPrivateCouponCommand.Process(
                 context,
                 promotion.Id,
                 policy.CouponPrefix,
                 suffix,
                 policy.CouponBlockSize);
-            PrivateCouponGroup @group = await _findEntityCommand.Process(context, typeof(PrivateCouponGroup), entityId) as PrivateCouponGroup;
-            return group.AsList();
+            promotion.SetComponent(new ApprovalComponent(context.GetPolicy<ApprovalStatusPolicy>().Approved));
+            await _persistEntityCommand.Process(context, promotion);
         }
+
         private async Task<Promotion> CreatePromtion(CommerceContext context, string suffix)
         {
             string templatePromotion = context.GetPolicy<LoyaltyPointsPolicy>().TemplatePromotion;
 
-            string newPromotion = $"{templatePromotion.Substring(50 - suffix.Length)}-{suffix}";
+            string newPromotion = string.Format(Constants.GeneratedPromotion, suffix); 
             return await this._duplicatePromotionCommand.Process(context, templatePromotion, newPromotion) as Promotion;
         }
     }
