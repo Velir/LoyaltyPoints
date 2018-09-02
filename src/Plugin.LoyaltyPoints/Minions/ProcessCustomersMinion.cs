@@ -18,7 +18,7 @@ namespace Plugin.LoyaltyPoints.Minions
     /// constructor injection.
     /// TODO Make pipeline, return correct arguments.
     /// </summary>
-    class ApplyLoyaltyPointsMinion:Minion
+    class ProcessCustomersMinion:Minion
     {
         public override void Initialize(IServiceProvider serviceProvider, ILogger logger, MinionPolicy policy, CommerceEnvironment environment,
             CommerceContext globalContext)
