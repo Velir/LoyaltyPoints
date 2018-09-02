@@ -12,11 +12,17 @@ using Sitecore.Framework.Pipelines;
 namespace Plugin.LoyaltyPoints.Minions
 {
     /// <summary>
-    /// Iterate through customers.
-    /// TODO Access orders, calculate and process loyalty points.
-    /// Note: Orders requires pipeline, as command is required, and minions do not support
-    /// constructor injection.
-    /// TODO Make pipeline, return correct arguments.
+    /// Issue through Customer list.
+    /// Get eligible loyalty point lines total.
+    /// If over threshhold, update applied count, using policy to determine
+    /// whether oldest or newest are applied first.
+    /// 
+    /// Note: policy can detemine if points are expired, and policy can have
+    /// a method for determining that (allows extending this).
+    ///
+    /// Adds entity to customer and coupon to establish new state.
+    ///
+    /// Notifies xConnect.
     /// </summary>
     class ProcessCustomersMinion:Minion
     {

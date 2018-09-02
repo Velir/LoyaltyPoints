@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Pipelines;
+using Plugin.LoyaltyPoints.Pipelines.Arguments;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Plugin.Customers;
 using Sitecore.Framework.Pipelines;
@@ -12,44 +13,32 @@ using Sitecore.Framework.Pipelines;
 namespace Plugin.LoyaltyPoints.Minions
 {
     /// <summary>
-    /// Iterate through customers.
-    /// TODO Access orders, calculate and process loyalty points.
-    /// Note: Orders requires pipeline, as command is required, and minions do not support
-    /// constructor injection.
-    /// TODO Make pipeline, return correct arguments.
+    ///  Check available coupon count against policy.MinimumCouponTarget. (e.g 100)
+    ///  Create coupons if under target. (e.g. 1000)
+    ///  Ensures list of coupons exists, and listens to it.
+    ///  Get list name form a constants class.
     /// </summary>
-    class CreateCouponsMinion:Minion
+    class CreateCouponsMinion : Minion
     {
         public override void Initialize(IServiceProvider serviceProvider, ILogger logger, MinionPolicy policy, CommerceEnvironment environment,
             CommerceContext globalContext)
         {
             base.Initialize(serviceProvider, logger, policy, environment, globalContext);
-            this.MinionPipeline = serviceProvider.GetService<IApplyLoyaltyPointsMinionPipeline>();
+            this.MinionPipeline = serviceProvider.GetService<ICreateCouponsPipeline>();
         }
 
-        protected IApplyLoyaltyPointsMinionPipeline MinionPipeline { get; set; }
+        protected ICreateCouponsPipeline MinionPipeline { get; set; }
 
-        public async override Task<MinionRunResultsModel> Run()
+        public override async Task<MinionRunResultsModel> Run()
         {
             MinionRunResultsModel result = new MinionRunResultsModel();
 
-            Logger.LogInformation($"{this.Name}: Invoked.");
-            string listName = Policy.ListToWatch;
-            Task<long> itemCount = GetListCount(listName);
-             
-            //TODO correct handling of <cref='MinionResultArgument.HasMoreItems'>HasMoreItems</cref>
-            
-            IEnumerable<CommerceEntity> entities = await GetListItems<CommerceEntity>(listName, Policy.ItemsPerBatch);
-            foreach (Customer customer in entities.OfType<Customer>())
-            {
-                // There is some ceremony in invoking a pipeline from a minion. This is 
-                // borrowed from Sitecore.Commerce.Plugin.Search.FullIndexMinion.
-                var executionContext = new CommercePipelineExecutionContextOptions(
-                        new CommerceContext(MinionContext.Logger,MinionContext.TelemetryClient, (IGetLocalizableMessagePipeline)null){Environment = this.Environment}); 
-                var pipelineResult = await this.MinionPipeline.Run(customer, executionContext);
+            Logger.LogTrace($"{this.Name}: Invoked.");
+           
 
-                result.ItemsProcessed++;
-            }
+            var executionContext = new CommercePipelineExecutionContextOptions(
+                    new CommerceContext(MinionContext.Logger, MinionContext.TelemetryClient, (IGetLocalizableMessagePipeline)null) { Environment = this.Environment });
+            var pipelineResult = await this.MinionPipeline.Run(new CreateCouponsArgument(), executionContext);
 
             return result;
         }

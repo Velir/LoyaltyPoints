@@ -12,11 +12,16 @@ using Sitecore.Framework.Pipelines;
 namespace Plugin.LoyaltyPoints.Minions
 {
     /// <summary>
-    /// Iterate through customers.
-    /// TODO Access orders, calculate and process loyalty points.
-    /// Note: Orders requires pipeline, as command is required, and minions do not support
-    /// constructor injection.
-    /// TODO Make pipeline, return correct arguments.
+    /// Gets customers from a list of customers to process.
+    /// Within transaction:
+    ///   Remove coupon from list of coupons.
+    ///   Mark coupon as applied to customer.
+    ///   Mark coupon earned as applied on customer.
+    ///   Fire live event.
+    ///   Mark applied as notified.
+    ///   Fire transaction.
+    ///
+    ///   If transaction rolls back, move customer to error queue.
     /// </summary>
     class IssueCouponMinion:Minion
     {
