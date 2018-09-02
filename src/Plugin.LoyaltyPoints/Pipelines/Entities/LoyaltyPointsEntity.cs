@@ -6,16 +6,9 @@ namespace Plugin.LoyaltyPoints.Pipelines.Entities
     {
         public LoyaltyPointsEntity()
         {
-            ReprovisionTriggerCount = 100;
-
-            ReprovisionBlockSize = 1000;
-            SequenceNumber = 1;
-
+            SequenceNumber = 26;
         }
-        public bool Lock { get; set; }
         public string CurrentPromotion { get; set; }
         public int SequenceNumber { get; set; }
-        public int ReprovisionTriggerCount { get; set; }
-        public int ReprovisionBlockSize { get; set; }
     }
 }

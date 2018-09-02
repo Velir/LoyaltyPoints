@@ -12,7 +12,8 @@ namespace Plugin.LoyaltyPoints.Policies
         public LoyaltyPointsPolicy()
         {
             this.TemplatePromotion = "Habitat_LoyaltyPointsPromotionBook-LoyalyPointsPromotion";
-            this.CouponBlockSize = 10;
+            this.CouponBlockSize = 20;
+            this.ReprovisionTriggerCount = 5;
             this.CouponPrefix = "LP";
         }
         /// <summary>
@@ -32,6 +33,7 @@ namespace Plugin.LoyaltyPoints.Policies
         /// object. 
         /// </summary>
         public string CouponPrefix { get; set; }
-   
-}
+
+        public int ReprovisionTriggerCount { get; set; }
+    }
 }

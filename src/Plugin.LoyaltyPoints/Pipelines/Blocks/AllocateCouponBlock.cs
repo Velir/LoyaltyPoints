@@ -110,7 +110,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
 
             entity.Id = CommerceEntity.IdPrefix<LoyaltyPointsEntity>();  // Entity is generated with random ID. We want a singleton.
-            entity.Lock = true;  // This will prevent duplicate batches from getting created. TODO put access and lock in a transaction.
+            
             Promotion promotion;
             if (string.IsNullOrEmpty(entity.CurrentPromotion))
             {
