@@ -7,23 +7,14 @@ using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Pipelines;
 using Plugin.LoyaltyPoints.Pipelines.Interfaces;
 using Sitecore.Commerce.Core;
+using Sitecore.Commerce.Core.Commands;
 using Sitecore.Commerce.Plugin.Customers;
 using Sitecore.Framework.Pipelines;
 
 namespace Plugin.LoyaltyPoints.Minions
 {
     /// <summary>
-    /// Issue through Customer list.
-    /// Get eligible loyalty point lines total.
-    /// If over threshhold, update applied count, using policy to determine
-    /// whether oldest or newest are applied first.
-    /// 
-    /// Note: policy can detemine if points are expired, and policy can have
-    /// a method for determining that (allows extending this).
-    ///
-    /// Adds entity to customer and coupon to establish new state.
-    ///
-    /// Notifies xConnect.
+    /// Iterates through Customer list and calls ProcessCustomer pipeline.
     /// </summary>
     class ProcessCustomersMinion:Minion
     {
@@ -32,15 +23,20 @@ namespace Plugin.LoyaltyPoints.Minions
         {
             base.Initialize(serviceProvider, logger, policy, environment, globalContext);
             this.MinionPipeline = serviceProvider.GetService<IApplyLoyaltyPointsMinionPipeline>();
+            this.CommerceCommand = new CommerceCommand(serviceProvider);
         }
+
+        protected ServiceProvider ServiceProvider {get;set;}
 
         protected IApplyLoyaltyPointsMinionPipeline MinionPipeline { get; set; }
 
-        public async override Task<MinionRunResultsModel> Run()
+        private CommerceCommand CommerceCommand {get;set;}
+
+        public override async Task<MinionRunResultsModel> Run()
         {
             MinionRunResultsModel result = new MinionRunResultsModel();
 
-            Logger.LogInformation($"{this.Name}: Invoked.");
+            Logger.LogTrace($"{this.Name}: Invoked.");
             string listName = Policy.ListToWatch;
             Task<long> itemCount = GetListCount(listName);
              
@@ -51,10 +47,16 @@ namespace Plugin.LoyaltyPoints.Minions
             {
                 // There is some ceremony in invoking a pipeline from a minion. This is 
                 // borrowed from Sitecore.Commerce.Plugin.Search.FullIndexMinion.
-                var executionContext = new CommercePipelineExecutionContextOptions(
-                        new CommerceContext(MinionContext.Logger,MinionContext.TelemetryClient, (IGetLocalizableMessagePipeline)null){Environment = this.Environment}); 
-                var pipelineResult = await this.MinionPipeline.Run(customer, executionContext);
 
+                await this.CommerceCommand.PerformTransaction(MinionContext, async () =>
+                {
+                    var executionContext = new CommercePipelineExecutionContextOptions(
+                        new CommerceContext(MinionContext.Logger, MinionContext.TelemetryClient, (IGetLocalizableMessagePipeline)null) { Environment = this.Environment });
+                    var pipelineResult = await this.MinionPipeline.Run(customer, executionContext);
+                     
+                    //TODO Think about error handling here. What happens if the transaction times out?
+                });
+                
                 result.ItemsProcessed++;
             }
 

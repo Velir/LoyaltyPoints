@@ -73,11 +73,6 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             CreateCouponsArgument arg,
             CommercePipelineExecutionContext context)
         {
-            // Does list exist? If not create.
-            // Get count.
-            // If count is above threashold, exit.
-            // If below, for now, just log.
-
             await this._getManagedListCommand.PerformTransaction(context.CommerceContext, async () =>
             {
                 LoyaltyPointsEntity loyaltyPointsEntity = await
