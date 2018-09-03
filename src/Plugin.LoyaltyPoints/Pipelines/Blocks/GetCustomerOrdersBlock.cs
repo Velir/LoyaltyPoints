@@ -1,14 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Components;
 using Plugin.LoyaltyPoints.Pipelines.Arguments;
-using Plugin.LoyaltyPoints.Policies;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Core.Commands;
-using Sitecore.Commerce.Plugin.Carts;
 using Sitecore.Commerce.Plugin.Customers;
 using Sitecore.Commerce.Plugin.Orders;
 using Sitecore.Framework.Pipelines;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Components;
@@ -10,10 +9,7 @@ using Plugin.LoyaltyPoints.Pipelines.Entities;
 using Plugin.LoyaltyPoints.Policies;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Core.Commands;
-using Sitecore.Commerce.Plugin.Carts;
-using Sitecore.Commerce.Plugin.Catalog;
 using Sitecore.Commerce.Plugin.Coupons;
-using Sitecore.Commerce.Plugin.Orders;
 using Sitecore.Commerce.Plugin.Promotions;
 using Sitecore.Framework.Conditions;
 using Sitecore.Framework.Pipelines;
@@ -22,7 +18,7 @@ using Promotion = Sitecore.Commerce.Plugin.Promotions.Promotion;
 namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 {
 
-  
+
     /// <summary>
     /// Design notes:
     /// This minion is responsible for processing customers, and

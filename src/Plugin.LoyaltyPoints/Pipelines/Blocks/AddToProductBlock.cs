@@ -1,18 +1,8 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SampleBlock.cs" company="Sitecore Corporation">
-//   Copyright (c) Sitecore Corporation 1999-2017
-// </copyright>
-// --------------------------------------------------------------------------------------------------------------------
-
-using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Plugin.LoyaltyPoints.Commands;
-using Plugin.LoyaltyPoints.Components;
 using Plugin.LoyaltyPoints.Pipelines.Arguments;
 using Plugin.LoyaltyPoints.Pipelines.Interfaces;
 using Sitecore.Commerce.Core;
-using Sitecore.Commerce.Core.Commands;
 using Sitecore.Commerce.Plugin.Catalog;
 using Sitecore.Framework.Conditions;
 using Sitecore.Framework.Pipelines;
