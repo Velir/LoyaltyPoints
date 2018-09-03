@@ -43,14 +43,10 @@ namespace Plugin.LoyaltyPoints.Controllers
         public async Task<IActionResult> AddLoyaltyPointsToProduct([FromBody] ODataActionParameters value)
         {
             string id = value["ProductId"].ToString();
-            int percent;
-            if (int.TryParse(value["Percent"].ToString(), out percent) == false)
-            {
-                throw new ArgumentException("Percent must be integer value");
-            }
+       
             
             var command = this.Command<AddLoyatlyPointsCommand>();
-            var result = await command.Process(this.CurrentContext, id, percent);
+            var result = await command.Process(this.CurrentContext, id);
 
             //TODO Confirm that `command` and not `result` is the correct value here. [Plugin uses command.]
             return new ObjectResult(command); 

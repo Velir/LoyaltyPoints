@@ -27,6 +27,10 @@ namespace Plugin.LoyaltyPoints.Policies
 
         }
 
+        /// <summary>
+        /// Sets percent amount for loyalyt point calculation.
+        /// </summary>
+
         public int LoyaltyPointPercent { get; set; }
 
         /// <summary>

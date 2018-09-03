@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Plugin.LoyaltyPoints.Pipelines;
 using Plugin.LoyaltyPoints.Pipelines.Arguments;
+using Plugin.LoyaltyPoints.Policies;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Core.Commands;
 using Sitecore.Commerce.Plugin.Catalog;
@@ -18,11 +19,12 @@ namespace Plugin.LoyaltyPoints.Commands
         }
    
         /// <returns>true if succesful</returns>
-        public async Task<SellableItem> Process(CommerceContext commerceContext, string productId, int percent)
+        public async Task<SellableItem> Process(CommerceContext commerceContext, string productId)
         {
             using (var activity = CommandActivity.Start(commerceContext, this))
             {
-                var arg = new AddLoyaltyPointsArgument(productId, percent);
+                int percent = commerceContext.GetPolicy<LoyaltyPointsPolicy>().LoyaltyPointPercent;
+                var arg = new AddLoyaltyPointsArgument(productId,percent);
                 var result = await this._pipeline.Run(arg, new CommercePipelineExecutionContextOptions(commerceContext));
 
                 return result;
