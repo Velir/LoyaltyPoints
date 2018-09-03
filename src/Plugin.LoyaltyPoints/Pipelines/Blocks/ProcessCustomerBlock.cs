@@ -71,20 +71,12 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
             foreach (var order in orders.Items)
             {
-                // Call order processing pipeline
-                // Get loyalty points found, update
-                // customer summary.
-
-                int returnValue = await _processOrderPipeline.Run(order, context);
-                summary.TotalPoints += returnValue;
+                int pointsFromOrder = await _processOrderPipeline.Run(order, context);
+                summary.TotalPoints += pointsFromOrder;
             }
-            customer.SetComponent(summary);
 
-            await _persistEntityPipeline.Run(new PersistEntityArgument(customer));
+            await _persistEntityPipeline.Run(new PersistEntityArgument(customer), context);
             return customer;
-
-
-
         }
     }
 }

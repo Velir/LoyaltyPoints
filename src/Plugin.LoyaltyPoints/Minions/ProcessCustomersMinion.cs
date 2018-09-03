@@ -22,13 +22,13 @@ namespace Plugin.LoyaltyPoints.Minions
             CommerceContext globalContext)
         {
             base.Initialize(serviceProvider, logger, policy, environment, globalContext);
-            this.MinionPipeline = serviceProvider.GetService<IApplyLoyaltyPointsMinionPipeline>();
+            this.MinionPipeline = serviceProvider.GetService<IProcessCustomerPipeline>();
             this.CommerceCommand = new CommerceCommand(serviceProvider);
         }
 
         protected ServiceProvider ServiceProvider {get;set;}
 
-        protected IApplyLoyaltyPointsMinionPipeline MinionPipeline { get; set; }
+        protected IProcessCustomerPipeline MinionPipeline { get; set; }
 
         private CommerceCommand CommerceCommand {get;set;}
 
@@ -45,9 +45,6 @@ namespace Plugin.LoyaltyPoints.Minions
             IEnumerable<CommerceEntity> entities = await GetListItems<CommerceEntity>(listName, Policy.ItemsPerBatch);
             foreach (Customer customer in entities.OfType<Customer>())
             {
-                // There is some ceremony in invoking a pipeline from a minion. This is 
-                // borrowed from Sitecore.Commerce.Plugin.Search.FullIndexMinion.
-
                 await this.CommerceCommand.PerformTransaction(MinionContext, async () =>
                 {
                     var executionContext = new CommercePipelineExecutionContextOptions(
