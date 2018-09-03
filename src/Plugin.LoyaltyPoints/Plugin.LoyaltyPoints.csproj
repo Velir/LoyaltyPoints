@@ -50,10 +50,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Sitecore.Commerce.Plugin.SQL">
       <HintPath>..\..\..\sym2018\SDK\packages\sitecore.commerce.plugin.sql\2.1.3\lib\net462\Sitecore.Commerce.Plugin.SQL.dll</HintPath>
     </Reference>

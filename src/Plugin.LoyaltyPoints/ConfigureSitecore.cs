@@ -62,7 +62,12 @@ namespace Plugin.LoyaltyPoints
                 .AddPipeline<IProcessOrderPipeline, ProcessOrderPipeline>(
                     configure => { configure.Add<ProcessOrderBlock>(); })
 
-                .AddPipeline<IApplyLoyaltyPointsMinionPipeline,ApplyLoyaltyPointsMinionPipeline>(configure =>
+                .AddPipeline<IIssueCouponPipeline, IssueCouponPipeline>(
+                    configure => { configure.Add<IssueCouponBlock>(); })
+
+                //TODO Confirm this is not used and remove, together wiht classes.
+                .AddPipeline<IApplyLoyaltyPointsMinionPipeline,ApplyLoyaltyPointsMinionPipeline>(
+                    configure =>
                     {
                         configure.Add<GetCustomerOrdersBlock>();
                     })

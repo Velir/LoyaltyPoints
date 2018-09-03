@@ -22,6 +22,7 @@ namespace Plugin.LoyaltyPoints.Policies
             this.ReprovisionTriggerCount = 5;
             this.CouponPrefix = "LP";
             this.CustomerProcessingInterval = new TimeSpan(0,5,0); // Five minutes for demo purposes.
+            this.PointsForCoupon = 1000;
 
         }
         /// <summary>
@@ -46,6 +47,8 @@ namespace Plugin.LoyaltyPoints.Policies
 
         public TimeSpan CustomerProcessingInterval
         { get; set; }
+
+        public int PointsForCoupon { get; set; }
 
         public virtual bool CustomerAlreadyProcessed(Customer customer)
         {

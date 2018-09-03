@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Plugin.LoyaltyPoints.Entities;
 using Plugin.LoyaltyPoints.Pipelines.Arguments;
-using Plugin.LoyaltyPoints.Pipelines.Entities;
 using Plugin.LoyaltyPoints.Policies;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Core.Commands;
@@ -116,14 +116,14 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             return arg;
         }
 
-        private async Task CopyCouponsToList(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity, ManagedList list)
+        private async Task CopyCouponsToList(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity, ManagedList targetList)
         {
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
-            string listName = $"promotion-{policy.CouponPrefix}-{entity.SequenceNumber}-unallocatedcoupons";
+            string sourceListName = $"promotion-{policy.CouponPrefix}-{entity.SequenceNumber}-unallocatedcoupons";
             var coupons = await _getEntitiesInListCommand.Process(context.CommerceContext,
-                listName, 0,
+                sourceListName, 0,
                 policy.CouponBlockSize);
-            await _addListEntitiesPipeline.Run(new ListEntitiesArgument(coupons, list.Name), context);
+            await _addListEntitiesPipeline.Run(new ListEntitiesArgument(coupons, targetList.Name), context);
         }
 
         

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sitecore.Commerce.Core;
 
 namespace Plugin.LoyaltyPoints.Components
@@ -6,7 +7,18 @@ namespace Plugin.LoyaltyPoints.Components
     internal class LoyaltySummary:Component
 
     {
+        public LoyaltySummary()
+        {
+            CouponCodes = new List<string>();
+        }
+
         public DateTimeOffset? LastProcessedDate { get; set; }
+
         public int TotalPoints { get; set; }
+
+        public int AppliedPoints { get; set; }
+
+        public List<string> CouponCodes { get; set; }
+        
     }
 }

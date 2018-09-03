@@ -1,6 +1,6 @@
 ﻿using Sitecore.Commerce.Core;
 
-namespace Plugin.LoyaltyPoints.Pipelines.Entities
+namespace Plugin.LoyaltyPoints.Entities
 {
     public class LoyaltyPointsEntity : CommerceEntity
     {
