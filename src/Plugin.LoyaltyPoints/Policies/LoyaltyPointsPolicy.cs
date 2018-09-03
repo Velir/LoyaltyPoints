@@ -66,9 +66,14 @@ namespace Plugin.LoyaltyPoints.Policies
             return true;
         }
 
-        public bool IsValid(CartLineComponent line)
+        /// <summary>
+        /// Override this to implment validation on line.
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        public virtual bool IsValid(CartLineComponent line)
         {
-            throw new NotImplementedException();
+            return true;
         }
     }
 }

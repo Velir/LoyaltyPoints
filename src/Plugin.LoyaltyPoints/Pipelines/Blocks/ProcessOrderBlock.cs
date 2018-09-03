@@ -42,7 +42,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     /// </summary>
     class ProcessOrderBlock : PipelineBlock<Order, int, CommercePipelineExecutionContext>
     {
-        
+
 
         public async override Task<int> Run(Order order, CommercePipelineExecutionContext context)
         {
@@ -61,7 +61,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     points += GetPoints(line);
                 }
             }
-            
+            // TODO persist order
+            return points;
         }
 
         private int GetPoints(CartLineComponent line)
