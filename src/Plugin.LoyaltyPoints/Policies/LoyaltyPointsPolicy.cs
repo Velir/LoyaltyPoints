@@ -1,4 +1,7 @@
-﻿using Sitecore.Commerce.Core;
+﻿using System;
+using Plugin.LoyaltyPoints.Pipelines.Blocks;
+using Sitecore.Commerce.Core;
+using Sitecore.Commerce.Plugin.Customers;
 
 namespace Plugin.LoyaltyPoints.Policies
 {
@@ -15,6 +18,8 @@ namespace Plugin.LoyaltyPoints.Policies
             this.CouponBlockSize = 20;
             this.ReprovisionTriggerCount = 5;
             this.CouponPrefix = "LP";
+            this.CustomerProcessingInterval = new TimeSpan(0,5,0); // Five minutes for demo purposes.
+
         }
         /// <summary>
         /// This promotion will be used to genearate promotions for the Loyalty Points functionality.
@@ -35,5 +40,16 @@ namespace Plugin.LoyaltyPoints.Policies
         public string CouponPrefix { get; set; }
 
         public int ReprovisionTriggerCount { get; set; }
+
+        public TimeSpan CustomerProcessingInterval
+        { get; set; }
+
+        public virtual bool CustomerAlreadyProcessed(Customer customer)
+        {
+            LoyaltySummary summary = customer.GetComponent<LoyaltySummary>();
+            return summary.LastProcessedDate.HasValue &&
+                   DateTimeOffset.UtcNow.Subtract(summary.LastProcessedDate.Value)
+                    <= this.CustomerProcessingInterval;
+        }
     }
 }

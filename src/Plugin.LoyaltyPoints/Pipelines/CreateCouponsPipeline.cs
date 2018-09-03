@@ -5,11 +5,6 @@ using Sitecore.Framework.Pipelines;
 
 namespace Plugin.LoyaltyPoints.Pipelines
 {
-    [PipelineDisplayName("LoyaltyPoints.CreateCoupons")]
-    public interface ICreateCouponsPipeline : IPipeline<CreateCouponsArgument, CreateCouponsArgument, CommercePipelineExecutionContext>
-    {
-    }
-
     public class CreateCouponsPipeline : CommercePipeline<CreateCouponsArgument, CreateCouponsArgument>,
         ICreateCouponsPipeline
     {

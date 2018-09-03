@@ -31,7 +31,7 @@
     <Content Include="Controllers\SampleController.cs" />
     <Content Include="Models\SampleModel.cs" />
     <Content Include="Pipelines\Arguments\AddLoyaltyPointsArgument.cs" />
-    <Content Include="Pipelines\IAddToProductPipeline.cs" />
+    <Content Include="Pipelines\Interfaces\IAddToProductPipeline.cs" />
     <Content Include="Pipelines\AddToProductPipeline.cs" />
     <Content Include="Policies\LoyaltyPointsPolicy.cs" />
   </ItemGroup>

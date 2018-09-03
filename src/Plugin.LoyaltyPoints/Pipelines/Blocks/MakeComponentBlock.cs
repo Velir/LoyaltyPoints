@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Components;
 using Plugin.LoyaltyPoints.Pipelines.Arguments;
+using Plugin.LoyaltyPoints.Pipelines.Interfaces;
 using Sitecore.Commerce.Core;
 using Sitecore.Framework.Conditions;
 using Sitecore.Framework.Pipelines;

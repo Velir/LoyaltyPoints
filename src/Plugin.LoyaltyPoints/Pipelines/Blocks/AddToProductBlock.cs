@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Commands;
 using Plugin.LoyaltyPoints.Components;
 using Plugin.LoyaltyPoints.Pipelines.Arguments;
+using Plugin.LoyaltyPoints.Pipelines.Interfaces;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Core.Commands;
 using Sitecore.Commerce.Plugin.Catalog;

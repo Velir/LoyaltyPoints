@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Plugin.LoyaltyPoints.Pipelines;
 using Plugin.LoyaltyPoints.Pipelines.Blocks;
+using Plugin.LoyaltyPoints.Pipelines.Interfaces;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Plugin.Carts;
 using Sitecore.Commerce.Plugin.Catalog;
@@ -54,6 +55,9 @@ namespace Plugin.LoyaltyPoints
 
                 .AddPipeline<ICreateCouponsPipeline, CreateCouponsPipeline>(
                     configure => { configure.Add<CreateCouponsBlock>(); })
+
+                .AddPipeline<IProcessCustomerPipeline, ProcessCustomerPipeline>(
+                    configure => { configure.Add<ProcessCustomerBlock>(); })
 
                 .AddPipeline<IApplyLoyaltyPointsMinionPipeline,ApplyLoyaltyPointsMinionPipeline>(configure =>
                     {
