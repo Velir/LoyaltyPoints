@@ -42,11 +42,16 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     /// </summary>
     class ProcessCustomerBlock : PipelineBlock<Customer, Customer, CommercePipelineExecutionContext>
     {
+        private readonly IProcessOrderPipeline _processOrderPipeline;
         private readonly FindEntitiesInListCommand _findEntitiesInListCommand;
+        private readonly IPersistEntityPipeline _persistEntityPipeline;
 
-        public ProcessCustomerBlock(FindEntitiesInListCommand findEntitiesInListCommand)
+        public ProcessCustomerBlock(FindEntitiesInListCommand findEntitiesInListCommand, IPersistEntityPipeline persistEntityPipeline, IProcessOrderPipeline processOrderPipeline)
         {
+            _processOrderPipeline = processOrderPipeline;
             _findEntitiesInListCommand = findEntitiesInListCommand;
+            _persistEntityPipeline = persistEntityPipeline;
+            
         }
         public async override Task<Customer> Run(Customer customer, CommercePipelineExecutionContext context)
         {
@@ -69,10 +74,13 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 // Call order processing pipeline
                 // Get loyalty points found, update
                 // customer summary.
-                int returnValue = 0;
+
+                int returnValue = await _processOrderPipeline.Run(order, context);
                 summary.TotalPoints += returnValue;
             }
             customer.SetComponent(summary);
+
+            await _persistEntityPipeline.Run(new PersistEntityArgument(customer));
             return customer;
 
 

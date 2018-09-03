@@ -42,9 +42,14 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     /// </summary>
     class ProcessOrderBlock : PipelineBlock<Order, int, CommercePipelineExecutionContext>
     {
+        private readonly IPersistEntityPipeline _persistEntityPipeline;
 
+        public ProcessOrderBlock(IPersistEntityPipeline persistEntityPipeline)
+        {
+            _persistEntityPipeline = persistEntityPipeline;
+        }
 
-        public async override Task<int> Run(Order order, CommercePipelineExecutionContext context)
+        public override async Task<int> Run(Order order, CommercePipelineExecutionContext context)
         {
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
             int points = 0;
@@ -61,7 +66,11 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     points += GetPoints(line);
                 }
             }
-            // TODO persist order
+
+            await _persistEntityPipeline.Run(
+                new PersistEntityArgument(order), 
+                context);
+             
             return points;
         }
 
