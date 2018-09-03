@@ -1,7 +1,10 @@
 ﻿using System;
+using Plugin.LoyaltyPoints.Components;
 using Plugin.LoyaltyPoints.Pipelines.Blocks;
 using Sitecore.Commerce.Core;
+using Sitecore.Commerce.Plugin.Carts;
 using Sitecore.Commerce.Plugin.Customers;
+using Sitecore.Commerce.Plugin.Orders;
 
 namespace Plugin.LoyaltyPoints.Policies
 {
@@ -50,6 +53,22 @@ namespace Plugin.LoyaltyPoints.Policies
             return summary.LastProcessedDate.HasValue &&
                    DateTimeOffset.UtcNow.Subtract(summary.LastProcessedDate.Value)
                     <= this.CustomerProcessingInterval;
+        }
+
+        /// <summary>
+        /// Override this to implement validation on order
+        /// (date, status, etc.)
+        /// </summary>
+        /// <param name="order"></param>
+        /// <returns></returns>
+        public virtual bool IsValid(Order order)
+        {
+            return true;
+        }
+
+        public bool IsValid(CartLineComponent line)
+        {
+            throw new NotImplementedException();
         }
     }
 }

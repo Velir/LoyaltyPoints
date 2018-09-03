@@ -79,11 +79,4 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
         }
     }
-
-    internal class LoyaltySummary:Component
-
-    {
-        public DateTimeOffset? LastProcessedDate { get; set; }
-        public int TotalPoints { get; set; }
-    }
 }

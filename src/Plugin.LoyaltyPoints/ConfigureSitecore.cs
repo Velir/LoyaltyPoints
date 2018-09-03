@@ -59,6 +59,9 @@ namespace Plugin.LoyaltyPoints
                 .AddPipeline<IProcessCustomerPipeline, ProcessCustomerPipeline>(
                     configure => { configure.Add<ProcessCustomerBlock>(); })
 
+                .AddPipeline<IProcessOrderPipeline, ProcessOrderPipeline>(
+                    configure => { configure.Add<ProcessOrderBlock>(); })
+
                 .AddPipeline<IApplyLoyaltyPointsMinionPipeline,ApplyLoyaltyPointsMinionPipeline>(configure =>
                     {
                         configure.Add<GetCustomerOrdersBlock>();
