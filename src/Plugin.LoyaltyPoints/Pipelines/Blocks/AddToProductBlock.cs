@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Pipelines.Arguments;
 using Plugin.LoyaltyPoints.Pipelines.Interfaces;
+using Plugin.LoyaltyPoints.Policies;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Plugin.Catalog;
 using Sitecore.Framework.Conditions;
@@ -36,6 +37,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         public override async Task<SellableItem> Run(AddLoyaltyPointsArgument arg,
             CommercePipelineExecutionContext context)
         {
+            LoyaltyPointsPolicy policy = context.GetPolicy<LoyaltyPointsPolicy>();
 
             SellableItem sellableItem = null;
             Condition.Requires(arg).IsNotNull($"{this.Name}: The argument can not be null");
@@ -68,7 +70,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             MakeComponentArgument makeComponentArgument = new MakeComponentArgument
             {
                 SellableItem = sellableItem,
-                Percent = arg.Percent
+                Percent = policy.LoyaltyPointPercent
             };
             var loyaltyPointsComponent = await _makeComponentPipeline.Run(makeComponentArgument, context);
             if (loyaltyPointsComponent == null)

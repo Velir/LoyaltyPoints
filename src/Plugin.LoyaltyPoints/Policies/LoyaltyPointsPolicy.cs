@@ -23,8 +23,12 @@ namespace Plugin.LoyaltyPoints.Policies
             this.CouponPrefix = "LP";
             this.CustomerProcessingInterval = new TimeSpan(0,5,0); // Five minutes for demo purposes.
             this.PointsForCoupon = 1000;
+            this.LoyaltyPointPercent = 10;
 
         }
+
+        public int LoyaltyPointPercent { get; set; }
+
         /// <summary>
         /// This promotion will be used to genearate promotions for the Loyalty Points functionality.
         /// Note that the generated promotions will be automatically approved.
