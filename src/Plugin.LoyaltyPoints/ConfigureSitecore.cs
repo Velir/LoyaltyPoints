@@ -10,6 +10,7 @@ using Plugin.LoyaltyPoints.Pipelines;
 using Plugin.LoyaltyPoints.Pipelines.Blocks;
 using Plugin.LoyaltyPoints.Pipelines.Interfaces;
 using Sitecore.Commerce.Core;
+using Sitecore.Commerce.EntityViews;
 using Sitecore.Commerce.Plugin.Carts;
 using Sitecore.Commerce.Plugin.Catalog;
 using Sitecore.Framework.Configuration;
@@ -76,6 +77,13 @@ namespace Plugin.LoyaltyPoints
                     configure => configure
                         .Add<AddCartLineLoyaltyBlock>()
                         .After<AddCartLineBlock>())
+
+                .ConfigurePipeline<IGetEntityViewPipeline>(
+                    configure => configure
+                        .Add<GetSellableItemLoyaltyPointsViewBlock>()
+                        .After<GetSellableItemEditBlock>())
+                                               
+
 
                 .ConfigurePipeline<IConfigureServiceApiPipeline>(
                     configure => configure.Add<ConfigureServiceApiBlock>()));
