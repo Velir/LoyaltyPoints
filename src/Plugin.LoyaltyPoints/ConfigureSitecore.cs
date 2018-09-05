@@ -82,15 +82,15 @@ namespace Plugin.LoyaltyPoints
                     configure => configure
                         .Add<GetSellableItemLoyaltyPointsViewBlock>()
                         .After<GetSellableItemEditBlock>())
-                                               
 
-
+                .ConfigurePipeline<IDoActionPipeline>(
+                    configure => configure
+                        .Add<DoActionEditLoyaltyPointsViewBlock>()
+                        .After<DoActionEditSellableItemBlock>())
+                        
                 .ConfigurePipeline<IConfigureServiceApiPipeline>(
                     configure => configure.Add<ConfigureServiceApiBlock>()));
             
-
-                
-
             services.RegisterAllCommands(assembly);
         }
     }
