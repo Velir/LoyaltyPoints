@@ -87,9 +87,6 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                         //TODO Write proper message to context.
                         return arg;
                     }
-
-                    // Channel
-
                   
                     var channel = policy.ChannelId; 
                     var interaction = new Interaction(contact, InteractionInitiator.Brand,
