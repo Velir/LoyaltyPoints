@@ -20,11 +20,12 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     {
         public override async Task<IssueCouponArgument> Run(IssueCouponArgument arg, CommercePipelineExecutionContext context)
         {
-            // See https://doc.sitecore.net/developers/privacy-guide/user-contact-customer.html for how you get from Customer to Contact. 
-            // Thank you Martina!
-              
-            // Running in a non Sitecore context:
+            // Sitecore docs on hitting xConnect in a non-Sitecore context:
             // https://doc.sitecore.net/developers/xp/xconnect/xconnect-client-api/xconnect-client-api-overview/get-client-outside-sitecore.html
+
+            // See https://doc.sitecore.net/developers/privacy-guide/user-contact-customer.html for how you get from Customer to Contact. 
+
+
 
             if (!arg.Coupons.Any())
             {
@@ -45,21 +46,14 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 return arg;
             }
 
-            
-
-            // Valid certificate thumbprints must be passed in
+           
             CertificateWebRequestHandlerModifierOptions options =
                 CertificateWebRequestHandlerModifierOptions.Parse(policy.XConnectClientCertConnectionString);
-
-            // Optional timeout modifier
             var certificateModifier = new CertificateWebRequestHandlerModifier(options);
-
             List<IHttpClientModifier> clientModifiers = new List<IHttpClientModifier>();
             var timeoutClientModifier = new TimeoutHttpClientModifier(new TimeSpan(0, 0, 20));
             clientModifiers.Add(timeoutClientModifier);
-
             
-            // This overload takes three client end points - collection, search, and configuration
             var collectionClient = new CollectionWebApiClient(new Uri($"{policy.XConnectUrl}/odata"), clientModifiers, new[] { certificateModifier });
             var searchClient = new SearchWebApiClient(new Uri($"{policy.XConnectUrl}/odata"), clientModifiers, new[] { certificateModifier });
             var configurationClient = new ConfigurationWebApiClient(new Uri($"{policy.XConnectUrl}/configuration"), clientModifiers, new[] { certificateModifier });
