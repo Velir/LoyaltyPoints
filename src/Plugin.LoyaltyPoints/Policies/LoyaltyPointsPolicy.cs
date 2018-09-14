@@ -5,6 +5,7 @@ using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Plugin.Carts;
 using Sitecore.Commerce.Plugin.Customers;
 using Sitecore.Commerce.Plugin.Orders;
+using Sitecore.XConnect;
 
 namespace Plugin.LoyaltyPoints.Policies
 {
@@ -57,6 +58,10 @@ namespace Plugin.LoyaltyPoints.Policies
         { get; set; }
 
         public int PointsForCoupon { get; set; }
+        public string XConnectClientCertConnectionString { get; set; }
+        public string XConnectUrl { get; set; }
+        public Guid ChannelId { get; set; }
+        public Guid EventId { get; set; }
 
         public virtual bool CustomerAlreadyProcessed(Customer customer)
         {

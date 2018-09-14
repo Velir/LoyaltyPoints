@@ -8,6 +8,9 @@
         
         public const string GeneratedPromotion = "LoyaltyPoints-GeneratedPromotion-{0}";
 
-        public const string LoyaltyPoints = "LoyaltyPoints";
+        public const string LoyaltyPoints = nameof(LoyaltyPoints);
+
+        // TODO Replace with Sitecore.Commerce.Constants.ContactSource
+        public const string CommerceUser = nameof(CommerceUser);
     }
 }
