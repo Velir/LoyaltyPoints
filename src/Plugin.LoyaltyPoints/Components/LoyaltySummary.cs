@@ -4,7 +4,7 @@ using Sitecore.Commerce.Core;
 
 namespace Plugin.LoyaltyPoints.Components
 {
-    internal class LoyaltySummary:Component
+    public class LoyaltySummary:Component
 
     {
         public LoyaltySummary()
