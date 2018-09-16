@@ -52,7 +52,6 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     {
                         VariantId = strArray[2]
                     };
-                    //sellableItem = await _getSellableItemPipeline.Run(argument, context);
                     sellableItem = await this._getSellableItemCommand.Process(context.CommerceContext, productId, false);
                 }
             }
@@ -61,8 +60,6 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             {
                 context.Logger.LogWarning($"No SellableItem found for ProductId \"{productId}\".");
                 return null;
-
-                //TODO Put correct error handling here, basd on Sitecore examples.
             }
 
             MakeComponentArgument makeComponentArgument = new MakeComponentArgument
@@ -74,7 +71,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             if (loyaltyPointsComponent == null)
             {
                 context.Logger.LogWarning($"No LoyaltyPointComponent created for ProductId \"{productId}\".");
-                return null; //TODO Proper pipeline failure code.
+                return null;
             }
 
             sellableItem.SetComponent(loyaltyPointsComponent);

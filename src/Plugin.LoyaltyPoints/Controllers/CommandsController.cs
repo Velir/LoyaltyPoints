@@ -43,12 +43,10 @@ namespace Plugin.LoyaltyPoints.Controllers
         public async Task<IActionResult> AddLoyaltyPointsToProduct([FromBody] ODataActionParameters value)
         {
             string id = value["ProductId"].ToString();
-       
             
             var command = this.Command<AddLoyatlyPointsCommand>();
-            var result = await command.Process(this.CurrentContext, id);
-
-            //TODO Confirm that `command` and not `result` is the correct value here. [Plugin uses command.]
+            await command.Process(this.CurrentContext, id);
+            
             return new ObjectResult(command); 
         }
 

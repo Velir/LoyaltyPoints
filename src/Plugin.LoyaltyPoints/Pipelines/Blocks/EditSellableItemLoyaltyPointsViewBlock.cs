@@ -29,6 +29,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 return entityView;
             CommerceEntity commerceEntity = context.CommerceContext.GetObject<CommerceEntity>(p => p.Id.Equals(entityView.EntityId, StringComparison.OrdinalIgnoreCase));
             SellableItem sellableItem = commerceEntity as SellableItem;
+
             if (entityView.Action.Equals("EditSellableItemSpecifications", StringComparison.OrdinalIgnoreCase))
             {
                 if (entityView.ContainsProperty(Constants.LoyaltyPoints))

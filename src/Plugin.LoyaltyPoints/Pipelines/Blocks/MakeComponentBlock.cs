@@ -29,7 +29,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             var basisPrice = await _getBasisPricePipeline.Run(arg.SellableItem, context);
             if (basisPrice <= 0)
             {
-                context.Logger.LogWarning($"{this.Name}: Product must have a postive basis price. Product \"{arg.SellableItem.ProductId}\" has price of {basisPrice:C}.");
+                context.Logger.LogWarning($"{this.Name}: Product must have a positive basis price. Product \"{arg.SellableItem.ProductId}\" has price of {basisPrice:C}.");
                 return null;
             }
 
