@@ -63,7 +63,7 @@ namespace Plugin.LoyaltyPoints.Policies
         public Guid ChannelId { get; set; }
         public Guid EventId { get; set; }
 
-        public virtual bool CustomerAlreadyProcessed(Customer customer)
+        public virtual bool IsCustomerProcessed(Customer customer)
         {
             LoyaltySummary summary = customer.GetComponent<LoyaltySummary>();
             return summary.LastProcessedDate.HasValue &&
@@ -91,5 +91,24 @@ namespace Plugin.LoyaltyPoints.Policies
         {
             return true;
         }
+    }
+
+   /// <summary>
+   /// This class demonstrates policy inheritance. By bootstrapping it instead of <see cref="LoyaltyPointsPolicy"/>
+   /// the order validation logic is made more strict.
+   /// </summary>
+    public class LoyaltyPointsCustomizedPolicy : LoyaltyPointsPolicy
+    {
+        public LoyaltyPointsCustomizedPolicy()
+        {
+            RequiredOrderAge = TimeSpan.FromDays(30);
+        }
+        public override bool IsValid(Order order)
+        {
+            return base.IsValid(order) &&
+                   order.OrderPlacedDate.Subtract(DateTimeOffset.UtcNow) >= RequiredOrderAge;
+        }
+
+        public TimeSpan RequiredOrderAge { get; set; }
     }
 }

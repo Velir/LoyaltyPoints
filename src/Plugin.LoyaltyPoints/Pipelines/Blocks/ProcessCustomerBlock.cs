@@ -48,7 +48,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
             var summary = customer.GetComponent<LoyaltySummary>();
 
-            if (policy.CustomerAlreadyProcessed(customer))
+            if (policy.IsCustomerProcessed(customer))
             {
                 return customer;
             }

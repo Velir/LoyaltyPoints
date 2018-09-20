@@ -45,15 +45,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 productId = productId.Replace("|", ",");
             if (!string.IsNullOrEmpty(productId))
             {
-                if (productId.Split(',').Length == 3)
-                {
-                    string[] strArray = productId.Split(',');
-                    ProductArgument argument = new ProductArgument(strArray[0], strArray[1])
-                    {
-                        VariantId = strArray[2]
-                    };
-                    sellableItem = await this._getSellableItemCommand.Process(context.CommerceContext, productId, false);
-                }
+                sellableItem = await this._getSellableItemCommand.Process(context.CommerceContext, productId, false);
             }
 
             if (sellableItem == null)
