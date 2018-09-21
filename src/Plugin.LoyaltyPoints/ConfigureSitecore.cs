@@ -15,21 +15,11 @@ using Sitecore.Commerce.Plugin.Carts;
 using Sitecore.Commerce.Plugin.Catalog;
 using Sitecore.Framework.Configuration;
 using Sitecore.Framework.Pipelines.Definitions.Extensions;
-using Sitecore.Framework.Pipelines.Definitions.Modifier;
 
 namespace Plugin.LoyaltyPoints
 {
-    /// <summary>
-    /// The configure sitecore class.
-    /// </summary>
     public class ConfigureSitecore : IConfigureSitecore
     {
-        /// <summary>
-        /// The configure services.
-        /// </summary>
-        /// <param name="services">
-        /// The services.
-        /// </param>
         public void ConfigureServices(IServiceCollection services)
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -70,13 +60,6 @@ namespace Plugin.LoyaltyPoints
                             
                             .Add<IssueCouponBlock>()
                             .Add<RegisterXConnectEventBlock>();
-                    })
-
-                //TODO Confirm this is not used and remove, together wiht classes.
-                .AddPipeline<IApplyLoyaltyPointsMinionPipeline,ApplyLoyaltyPointsMinionPipeline>(
-                    configure =>
-                    {
-                        configure.Add<GetCustomerOrdersBlock>();
                     })
 
                 .ConfigurePipeline<IAddCartLinePipeline>(

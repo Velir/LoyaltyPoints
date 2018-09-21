@@ -22,13 +22,11 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     [PipelineDisplayName("LoyaltyPoints.Blocks.AddToProduct")]
     public class AddToProductBlock : PipelineBlock<AddLoyaltyPointsArgument, SellableItem, CommercePipelineExecutionContext>
     {
-        private readonly IGetSellableItemPipeline _getSellableItemPipeline;
         private readonly IMakeComponentPipeline _makeComponentPipeline;
         private readonly GetSellableItemCommand _getSellableItemCommand;
 
-        public AddToProductBlock(IGetSellableItemPipeline getSellableItemPipeline, IMakeComponentPipeline makeComponentPipeline, GetSellableItemCommand getSellableItemCommand)
+        public AddToProductBlock(IMakeComponentPipeline makeComponentPipeline, GetSellableItemCommand getSellableItemCommand)
         {
-            _getSellableItemPipeline = getSellableItemPipeline; 
             _makeComponentPipeline = makeComponentPipeline;
             _getSellableItemCommand = getSellableItemCommand;
         }

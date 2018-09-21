@@ -37,7 +37,11 @@ namespace Plugin.LoyaltyPoints.Minions
            
 
             var executionContext = new CommercePipelineExecutionContextOptions(
-                    new CommerceContext(MinionContext.Logger, MinionContext.TelemetryClient, (IGetLocalizableMessagePipeline)null) { Environment = this.Environment });
+                    new CommerceContext(
+                        MinionContext.Logger, 
+                        MinionContext.TelemetryClient, 
+                        (IGetLocalizableMessagePipeline)null)
+                        { Environment = this.Environment });
             var pipelineResult = await this.MinionPipeline.Run(new CreateCouponsArgument(), executionContext);
 
             return result;

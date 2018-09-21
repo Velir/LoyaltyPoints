@@ -29,13 +29,12 @@ namespace Plugin.LoyaltyPoints.Policies
         }
 
         /// <summary>
-        /// Sets percent amount for loyalyt point calculation.
+        /// Sets percent amount for loyalty point calculation.
         /// </summary>
-
         public int LoyaltyPointPercent { get; set; }
 
         /// <summary>
-        /// This promotion will be used to genearate promotions for the Loyalty Points functionality.
+        /// This promotion will be used to generate promotions for the Loyalty Points functionality.
         /// Note that the generated promotions will be automatically approved.
         /// </summary>
         public string TemplatePromotion { get; set; }
@@ -54,13 +53,16 @@ namespace Plugin.LoyaltyPoints.Policies
 
         public int ReprovisionTriggerCount { get; set; }
 
-        public TimeSpan CustomerProcessingInterval
-        { get; set; }
+        public TimeSpan CustomerProcessingInterval { get; set; }
 
         public int PointsForCoupon { get; set; }
+
         public string XConnectClientCertConnectionString { get; set; }
+
         public string XConnectUrl { get; set; }
+
         public Guid ChannelId { get; set; }
+
         public Guid EventId { get; set; }
 
         public virtual bool IsCustomerProcessed(Customer customer)
@@ -75,18 +77,14 @@ namespace Plugin.LoyaltyPoints.Policies
         /// Override this to implement validation on order
         /// (date, status, etc.)
         /// </summary>
-        /// <param name="order"></param>
-        /// <returns></returns>
         public virtual bool IsValid(Order order)
         {
             return true;
         }
 
         /// <summary>
-        /// Override this to implment validation on line.
+        /// Override this to implement validation on line.
         /// </summary>
-        /// <param name="line"></param>
-        /// <returns></returns>
         public virtual bool IsValid(CartLineComponent line)
         {
             return true;
@@ -106,7 +104,8 @@ namespace Plugin.LoyaltyPoints.Policies
         public override bool IsValid(Order order)
         {
             return base.IsValid(order) &&
-                   order.OrderPlacedDate.Subtract(DateTimeOffset.UtcNow) >= RequiredOrderAge;
+                   order.OrderPlacedDate.Subtract(DateTimeOffset.UtcNow)
+                   >= RequiredOrderAge;
         }
 
         public TimeSpan RequiredOrderAge { get; set; }

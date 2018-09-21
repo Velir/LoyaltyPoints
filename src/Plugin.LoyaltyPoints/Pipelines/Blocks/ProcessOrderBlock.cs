@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Plugin.LoyaltyPoints.Components;
 using Plugin.LoyaltyPoints.Policies;
@@ -40,24 +41,15 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         public override async Task<int> Run(Order order, CommercePipelineExecutionContext context)
         {
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
-            int points = 0;
 
             if (!policy.IsValid(order))
             {
                 return 0;
             }
 
-            foreach (var line in order.Lines)
-            {
-                if (policy.IsValid(line))
-                {
-                    points += GetPoints(line);
-                }
-            }
+            int points = order.Lines.Where(policy.IsValid).Sum(GetPoints);
 
-            await _persistEntityPipeline.Run(
-                new PersistEntityArgument(order), 
-                context);
+            await _persistEntityPipeline.Run(new PersistEntityArgument(order), context);
              
             return points;
         }

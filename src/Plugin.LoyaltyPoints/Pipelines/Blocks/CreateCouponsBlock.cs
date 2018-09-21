@@ -70,22 +70,15 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         {
             await this._getManagedListCommand.PerformTransaction(context.CommerceContext, async () =>
             {
-                LoyaltyPointsEntity loyaltyPointsEntity = await
-                        _findEntityCommand.Process(
-                            context.CommerceContext,
-                            typeof(LoyaltyPointsEntity),
-                            Constants.EntityId,
-                            shouldCreate: true)
-                    as LoyaltyPointsEntity;
-                LoyaltyPointsPolicy policy = context.CommerceContext.GetPolicy<LoyaltyPointsPolicy>();
-
+                LoyaltyPointsEntity loyaltyPointsEntity = await _findEntityCommand.Process(context.CommerceContext,typeof(LoyaltyPointsEntity),
+                            Constants.EntityId,shouldCreate: true) as LoyaltyPointsEntity;
+                var policy = context.CommerceContext.GetPolicy<LoyaltyPointsPolicy>();
                 ManagedList list = await _getManagedListCommand.Process(context.CommerceContext, Constants.AvailableCouponsList);
                 if (list == null)
                 {
                     context.Logger.LogInformation($"{this.Name}: List {Constants.AvailableCouponsList} not found. Creating it.");
                     list = await _createManagedListCommand.Process(context.CommerceContext, Constants.AvailableCouponsList);
                 }
-
                 long count = await _getListCountCommand.Process(context.CommerceContext, Constants.AvailableCouponsList);
                 context.Logger.LogInformation(
                         $"{this.Name}: List {Constants.AvailableCouponsList} has {count} items.");
@@ -95,13 +88,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                         $"{this.Name}: List {Constants.AvailableCouponsList} is at or under reprovision count of {policy.ReprovisionTriggerCount}.");
                     await AddCoupons(context, loyaltyPointsEntity);
                     await CopyCouponsToList(context, loyaltyPointsEntity, list);
-
-                    
-
                     await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
                     await _persistEntityCommand.Process(context.CommerceContext, list);
-
-                     
                 }
             });
 
@@ -133,7 +121,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
             entity.SequenceNumber++;
             string suffix = entity.SequenceNumber.ToString();
-            var promotion = await CreatePromtion(context, suffix);
+            var promotion = await CreatePromotion(context, suffix);
             if (promotion == null)
             {
                 context.Abort($"{this.Name}: Unable to generate LoyaltyPoints promotion.", context);
@@ -152,7 +140,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             await _persistEntityCommand.Process(context.CommerceContext, promotion);
         }
 
-        private async Task<Promotion> CreatePromtion(CommercePipelineExecutionContext context, string suffix)
+        private async Task<Promotion> CreatePromotion(CommercePipelineExecutionContext context, string suffix)
         {
             string templatePromotion = context.GetPolicy<LoyaltyPointsPolicy>().TemplatePromotion;
 
