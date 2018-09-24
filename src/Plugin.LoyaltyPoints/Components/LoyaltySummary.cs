@@ -9,7 +9,7 @@ namespace Plugin.LoyaltyPoints.Components
     {
         public LoyaltySummary()
         {
-            CouponCodes = new List<string>();
+            CouponEntities = new List<string>();
         }
 
         public DateTimeOffset? LastProcessedDate { get; set; }
@@ -18,7 +18,7 @@ namespace Plugin.LoyaltyPoints.Components
 
         public int AppliedPoints { get; set; }
 
-        public List<string> CouponCodes { get; set; }
+        public List<string> CouponEntities { get; set; }
         
     }
 }

@@ -9,8 +9,10 @@ namespace Plugin.LoyaltyPoints.Pipelines
         public IssueCouponArgument()
         {
             Coupons = new List<string>();
+            CouponEntities = new List<string>();
         }
         public Customer Customer { get; set; }
         public List<string> Coupons { get; set; }
+        public List<string> CouponEntities { get; set; }
     }
 }

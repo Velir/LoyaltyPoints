@@ -91,7 +91,10 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     }
 
                     summary.AppliedPoints += couponsToIssue * policy.PointsForCoupon;
-                    summary.CouponCodes.AddRange(couponCodes);
+                    
+                    summary.CouponEntities.AddRange(entityIds);
+
+                    arg.CouponEntities.AddRange(entityIds);
                     arg.Coupons.AddRange(couponCodes);
 
                     await _persistEntityPipeline.Run(new PersistEntityArgument(arg.Customer), context);

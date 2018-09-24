@@ -13,6 +13,7 @@ using Sitecore.Commerce.Core;
 using Sitecore.Commerce.EntityViews;
 using Sitecore.Commerce.Plugin.Carts;
 using Sitecore.Commerce.Plugin.Catalog;
+using Sitecore.Commerce.Plugin.Customers;
 using Sitecore.Framework.Configuration;
 using Sitecore.Framework.Pipelines.Definitions.Extensions;
 
@@ -71,6 +72,11 @@ namespace Plugin.LoyaltyPoints
                     configure => configure
                         .Add<GetSellableItemLoyaltyPointsViewBlock>()
                         .After<GetSellableItemEditBlock>())
+
+
+                .ConfigurePipeline<IGetEntityViewPipeline>(
+                    configure => configure
+                        .Add<GetCustomerLoyaltyCouponsViewBlock>())
 
                 .ConfigurePipeline<IDoActionPipeline>(
                     configure => configure
