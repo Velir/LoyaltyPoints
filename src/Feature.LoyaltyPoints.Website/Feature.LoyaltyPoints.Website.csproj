@@ -50,6 +50,9 @@
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+      <HintPath>libraries\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="Sitecore.Commerce.Connect.Core">
       <HintPath>libraries\Sitecore.Commerce.Connect.Core.dll</HintPath>
     </Reference>
@@ -61,6 +64,12 @@
     </Reference>
     <Reference Include="Sitecore.Commerce.XA.Foundation.Common">
       <HintPath>libraries\Sitecore.Commerce.XA.Foundation.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.Commerce.XA.Foundation.Connect">
+      <HintPath>libraries\Sitecore.Commerce.XA.Foundation.Connect.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.Kernel, Version=11.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Sitecore.Kernel.NoReferences.9.0.171219\lib\NET462\Sitecore.Kernel.dll</HintPath>
     </Reference>
     <Reference Include="Sitecore.XA.Foundation.Mvc">
       <HintPath>libraries\Sitecore.XA.Foundation.Mvc.dll</HintPath>
@@ -106,7 +115,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Config\Include\zzz.Feature.LoyaltyPoints\Feature.LoyaltyPoints.config" />
+    <Content Include="App_Config\Include\zzz.Feature.LoyaltyPoints\Feature.LoyaltyPoints.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Properties\PublishProfiles\CustomProfile1.pubxml" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <Content Include="Scripts\Commerce\Feature\LoyaltyPoints\UnusedCoupons.js" />
@@ -114,10 +125,16 @@
     <None Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configurators\RegisterDependencies.cs" />
     <Compile Include="Controllers\UnusedCouponsController.cs" />
-    <Compile Include="Models\UnusedCouponsRenderingModel.cs" />
-    <Compile Include="Pipelines\GetUserWithCoupons.cs" />
+    <Compile Include="Managers\CouponManager.cs" />
+    <Compile Include="Managers\ICouponManager.cs" />
+    <Compile Include="Models\Coupon.cs" />
+    <Compile Include="Models\JsonResults\LoyaltyCouponListJsonResult.cs" />
+    <Compile Include="Models\LoyaltyCouponsRenderingModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\CouponRepository.cs" />
+    <Compile Include="Repositories\ICouponRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Views\web.config" />

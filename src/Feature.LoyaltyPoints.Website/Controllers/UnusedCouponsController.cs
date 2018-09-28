@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using Feature.LoyaltyPoints.Website.Models;
+using Feature.LoyaltyPoints.Website.Repositories;
+using Sitecore.Commerce.Services.Orders;
 using Sitecore.XA.Foundation.Mvc.Controllers;
 
 namespace Feature.LoyaltyPoints.Website.Controllers
 {
+    //Handles highest level response orchestration.  All data comes from repository.
     public class UnusedCouponsController : StandardController
     {
         private readonly ICouponRepository _couponRepository;
@@ -18,12 +19,7 @@ namespace Feature.LoyaltyPoints.Website.Controllers
         }
         protected override object GetModel()
         {
-            return new UnusedCouponsRenderingModel();
+            return _couponRepository.GetUnusedCouponsRenderingModel();
         }
-    }
-
-    public interface ICouponRepository
-    {
-         //TODO Figure this out. How do I talk to the engine, make use of the Loyalty Coupons view?
     }
 }
