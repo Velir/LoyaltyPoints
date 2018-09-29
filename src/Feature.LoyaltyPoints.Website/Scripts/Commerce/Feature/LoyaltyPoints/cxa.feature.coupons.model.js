@@ -15,5 +15,5 @@ function CouponsViewModel() {
 function CouponDetailModel(data) {
     var self = this;
 
-    self.name = ko.observable(data.Name);
+    self.code = ko.observable(data.Code);
 }

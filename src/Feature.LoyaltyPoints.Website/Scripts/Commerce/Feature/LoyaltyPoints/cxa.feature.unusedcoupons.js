@@ -21,9 +21,9 @@
         component.Name = "CXA/Feature/LoyaltyPoints/UnusedCoupons";
 
         var AddMockData = function(component) {
-            component.Model.coupons.push(new CouponDetailModel({ Name: "LPXXXXXX01" }));
-            component.Model.coupons.push(new CouponDetailModel({ Name: "LPXXXXXX02" }));
-            component.Model.coupons.push(new CouponDetailModel({ Name: "LPXXXXXX03" }));
+            component.Model.coupons.push(new CouponDetailModel({ Code: "LPXXXXXX01" }));
+            component.Model.coupons.push(new CouponDetailModel({ Code: "LPXXXXXX02" }));
+            component.Model.coupons.push(new CouponDetailModel({ Code: "LPXXXXXX03" }));
         };
 
         component.InExperienceEditorMode = function() {

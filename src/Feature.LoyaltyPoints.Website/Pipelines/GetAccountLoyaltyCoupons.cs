@@ -43,20 +43,12 @@ namespace Feature.LoyaltyPoints.Website.Pipelines
 
             if (!result.Success)
                 return;
-             List<Coupon> couponList = new List<Coupon>();
+            var couponList = customerView.ChildViews.Select(v => new Coupon {Code = v.Name}).ToList();
        
-            // Is it standard practice to put models in a shared DLL? If not, how do I see properties on the returned objects.
-            EntityView loyaltyCoupons = customerView.ChildViews.Where<Model>((Func<Model, bool>)(v => v.Name.Equals("LoyaltyCoupons", StringComparison.OrdinalIgnoreCase))).FirstOrDefault<Model>() as EntityView;
-            if (loyaltyCoupons != null || loyaltyCoupons.ChildViews.Any<Model>())
-            {
-                foreach (Model childView in (Collection<Model>)loyaltyCoupons.ChildViews)
-                {
-                    Coupon couponEntity = this.TranslateViewToCoupon(childView as EntityView, (ServiceProviderResult)result);
-                    couponList.Add(couponEntity);
-                }
-            }
+            //TODO Get Coupon entities, and use that to detemine whether they have been used, what there code is, and when they were issued.
+             
 
-            result.Coupons = couponList; //EXPECTED FOR NOW
+            result.Coupons = couponList;  
         }
 
         private Coupon TranslateViewToCoupon(EntityView entityView, ServiceProviderResult result)

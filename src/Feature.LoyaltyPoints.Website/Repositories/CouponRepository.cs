@@ -29,7 +29,7 @@ namespace Feature.LoyaltyPoints.Website.Repositories
 
         public object GetUnusedCouponsRenderingModel()
         {
-            var coupons = _manager.GetCoupons(_storefrontContext, _visitorContext);
+            var coupons = _manager.GetCoupons(_storefrontContext, _visitorContext);  //TODO Remove if not needed.
             return new LoyaltyCouponsRenderingModel(coupons);
         }
 
