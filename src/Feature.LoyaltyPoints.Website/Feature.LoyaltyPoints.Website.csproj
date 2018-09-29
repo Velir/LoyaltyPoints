@@ -71,8 +71,17 @@
     <Reference Include="Sitecore.Kernel, Version=11.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Sitecore.Kernel.NoReferences.9.0.171219\lib\NET462\Sitecore.Kernel.dll</HintPath>
     </Reference>
+    <Reference Include="Sitecore.Mvc">
+      <HintPath>libraries\Sitecore.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.XA.Foundation.MarkupDecorator">
+      <HintPath>libraries\Sitecore.XA.Foundation.MarkupDecorator.dll</HintPath>
+    </Reference>
     <Reference Include="Sitecore.XA.Foundation.Mvc">
       <HintPath>libraries\Sitecore.XA.Foundation.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="Sitecore.XA.Foundation.SitecoreExtensions">
+      <HintPath>libraries\Sitecore.XA.Foundation.SitecoreExtensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -120,7 +129,8 @@
     </Content>
     <None Include="Properties\PublishProfiles\CustomProfile1.pubxml" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
-    <Content Include="Scripts\Commerce\Feature\LoyaltyPoints\UnusedCoupons.js" />
+    <Content Include="Scripts\Commerce\Feature\LoyaltyPoints\cxa.feature.coupons.model.js" />
+    <Content Include="Scripts\Commerce\Feature\LoyaltyPoints\cxa.feature.unusedcoupons.js" />
     <Content Include="Views\UnusedCoupons\UnusedCoupons.cshtml" />
     <None Include="Web.config" />
   </ItemGroup>
@@ -130,6 +140,7 @@
     <Compile Include="Managers\CouponManager.cs" />
     <Compile Include="Managers\ICouponManager.cs" />
     <Compile Include="Models\Coupon.cs" />
+    <Compile Include="Models\JsonResults\CouponsBaseJsonResult.cs" />
     <Compile Include="Models\JsonResults\LoyaltyCouponListJsonResult.cs" />
     <Compile Include="Models\LoyaltyCouponsRenderingModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

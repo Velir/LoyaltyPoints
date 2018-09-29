@@ -33,16 +33,16 @@
 
         component.Init = function() {
             if (CXAApplication.RunningMode === RunningModes.Normal) {
-
-                // TODO
-                //AjaxService.Post("/api/cxa/LoyaltyPonts/GetUnusedCoupons",
-                //    function(data, success {
-                //        if (success && data && data.Success) {
-                //            component.Model.updateModel(data);
-                //        }
-                //    };
-                console.log("Init invoked");
-                AddMockData(component);
+                 
+                AjaxService.Post("/api/cxa/UnusedCoupons/GetUnusedCoupons",
+                    {},
+                    function(data, success) {
+                        if (success && data && data.Success) {
+                            component.Model.updateModel(data);
+                        }
+                    });
+               
+                
                 return component;
             }
         }

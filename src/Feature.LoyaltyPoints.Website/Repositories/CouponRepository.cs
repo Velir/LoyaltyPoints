@@ -1,5 +1,6 @@
 ﻿using Feature.LoyaltyPoints.Website.Managers;
 using Feature.LoyaltyPoints.Website.Models;
+using Feature.LoyaltyPoints.Website.Models.JsonResults;
 using Sitecore.Commerce.XA.Foundation.Common;
 using Sitecore.Commerce.XA.Foundation.Common.Models;
 using Sitecore.Commerce.XA.Foundation.Common.Repositories;
@@ -28,12 +29,16 @@ namespace Feature.LoyaltyPoints.Website.Repositories
 
         public object GetUnusedCouponsRenderingModel()
         {
-            // TODO Pass a parameter to limit to unused coupons.
             var coupons = _manager.GetCoupons(_storefrontContext, _visitorContext);
             return new LoyaltyCouponsRenderingModel(coupons);
+        }
 
-
-            //TODO Add JSON call (supports AJAX loading?)
+        public CouponsBaseJsonResult GetUnusedCoupons()
+        {
+            var result = new CouponsBaseJsonResult(_storefrontContext);
+            result.Initialize();
+            result.Success = true;
+            return result;
         }
     }
 }

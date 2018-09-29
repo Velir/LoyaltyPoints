@@ -13,6 +13,7 @@ namespace Feature.LoyaltyPoints.Website.Configurators
         public void Configure(Microsoft.Extensions.DependencyInjection.IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<UnusedCouponsController>();
+            
         }
     }
 }

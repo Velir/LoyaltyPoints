@@ -21,5 +21,14 @@ namespace Feature.LoyaltyPoints.Website.Controllers
         {
             return _couponRepository.GetUnusedCouponsRenderingModel();
         }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public JsonResult GetUnusedCoupons()
+        {
+            return this.Json(_couponRepository.GetUnusedCoupons()); 
+        }
+
     }
 }
