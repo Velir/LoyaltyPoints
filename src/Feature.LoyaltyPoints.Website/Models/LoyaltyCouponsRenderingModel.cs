@@ -25,9 +25,9 @@ namespace Feature.LoyaltyPoints.Website.Models
 
         private IEnumerable<Coupon> GetSamples() => new List<Coupon>
         {
-            new Coupon{Name="COUPON1"},
-            new Coupon{Name="COUPON2"},
-            new Coupon{Name="COUPON3"}
+            new Coupon{Name="LoyaltyCouponsRenderingModel1"},
+            new Coupon{Name="LoyaltyCouponsRenderingModel2"},
+            new Coupon{Name="LoyaltyCouponsRenderingModel3"}
         };
 
         private IEnumerable<Coupon> GetUserData() => this.managerResponse.Result;

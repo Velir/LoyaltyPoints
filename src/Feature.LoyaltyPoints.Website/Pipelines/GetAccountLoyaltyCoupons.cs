@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
-using CommerceOps.Sitecore.Commerce.EntityViews;
 using Sitecore.Commerce.Core;
+using Sitecore.Commerce.Engine;
 using Sitecore.Commerce.Engine.Connect.Entities;
 using Sitecore.Commerce.Engine.Connect.Pipelines;
 using Sitecore.Commerce.Entities;
-using Sitecore.Commerce.Entities.Customers;
+using Sitecore.Commerce.EntityViews;
 using Sitecore.Commerce.Pipelines;
 using Sitecore.Commerce.Plugin.Coupons;
 using Sitecore.Commerce.Services;
@@ -17,11 +17,11 @@ using Sitecore.Diagnostics;
 
 namespace Feature.LoyaltyPoints.Website.Pipelines
 {
-    public class GetAccountLoyaltyCoupons: Sitecore.Commerce.Engine.Connect.Pipelines.PipelineProcessor
+    public class GetCustomerCoupons: Sitecore.Commerce.Engine.Connect.Pipelines.PipelineProcessor
     {
         public IEntityFactory EntityFactory { get; set; }
 
-        public GetAccountLoyaltyCoupons(IEntityFactory entityFactory)
+        public GetCustomerCoupons(IEntityFactory entityFactory)
         {
             Assert.ArgumentNotNull((object)entityFactory, nameof(entityFactory));
             this.EntityFactory = entityFactory;
@@ -29,43 +29,33 @@ namespace Feature.LoyaltyPoints.Website.Pipelines
 
         public override void Process(ServicePipelineArgs args)
         {
-            GetCouponsRequest request;
-            GetCouponsResult result;
-
-            // TODO Replicate behavior or private method below.
-            //PipelineUtility.ValidateArguments<GetCouponsRequest, GetCouponsResult>(args, out request, out result);
-
-
-            Assert.ArgumentNotNull((object)request.CommerceCustomer, "request.CommerceCustomer");
-            EntityView entityView1 = this.GetEntityView(this.GetContainer(request.Shop.Name, string.Empty, request.CommerceCustomer.ExternalId, "", args.Request.CurrencyCode, new DateTime?()), request.CommerceCustomer.ExternalId, string.Empty, "LoyaltyCoupons", string.Empty, (ServiceProviderResult)result);
+            // Below in lieu of PipelineUtility.ValidateArguments, which is used by Sitecore's Commerce.Engine.Connect processors, but is internal.
+            GetCouponsRequest request = args.Request as GetCouponsRequest;
+            GetCouponsResult result = args.Result as GetCouponsResult;
+            Assert.IsNotNull(request, "args.Request");
+            Assert.IsNotNull(result, "args.Result");
+              
+            Container container = this.GetContainer(request.Shop.Name, string.Empty, request.CommerceCustomer.ExternalId, "", args.Request.CurrencyCode, new DateTime?());
+            EntityView customerView = this.GetEntityView(container, request.CommerceCustomer.ExternalId, string.Empty, "Customer", string.Empty, (ServiceProviderResult)result);
             if (!result.Success)
                 return;
              List<Coupon> couponList = new List<Coupon>();
-            EntityView entityView2 = entityView1.ChildViews.Where<Model>((Func<Model, bool>)(v => v.Name.Equals("LoyaltyPonts", StringComparison.OrdinalIgnoreCase))).FirstOrDefault<Model>() as EntityView;
-            if (entityView2 != null || entityView2.ChildViews.Any<Model>())
+            EntityView loyaltyCoupons = customerView.ChildViews.Where<Model>((Func<Model, bool>)(v => v.Name.Equals("LoyaltyCoupons", StringComparison.OrdinalIgnoreCase))).FirstOrDefault<Model>() as EntityView;
+            if (loyaltyCoupons != null || loyaltyCoupons.ChildViews.Any<Model>())
             {
-                foreach (Model childView in (Collection<Model>)entityView2.ChildViews)
+                foreach (Model childView in (Collection<Model>)loyaltyCoupons.ChildViews)
                 {
-                    Coupon couponEntitye = this.TranslateViewToCoupon(childView as EntityView, (ServiceProviderResult)result);
-                    couponList.Add((Sitecore.Commerce.Entities.Party)couponEntitye);
+                    Coupon couponEntity = this.TranslateViewToCoupon(childView as EntityView, (ServiceProviderResult)result);
+                    couponList.Add(couponEntity);
                 }
             }
-            result.Coupons = (IReadOnlyCollection<Coupon>)couponList.AsReadOnly();
+            result.Coupons = (IReadOnlyCollection<Coupon>)couponList.AsReadOnly();  //EXPECTED FOR NOW
         }
 
-        private CommerceParty TranslateViewToCoupon(EntityView entityView, ServiceProviderResult result)
+        private Coupon TranslateViewToCoupon(EntityView entityView, ServiceProviderResult result)
         {
             throw new NotImplementedException();
         }
-    }
-
-    public class GetCouponsResult:ServiceProviderResult
-    {
-    }
-
-    public class GetCouponsRequest:ServiceProviderRequest
-    {
-        public CommerceCustomer CommerceCustomer { get; set; }
     }
 }
    

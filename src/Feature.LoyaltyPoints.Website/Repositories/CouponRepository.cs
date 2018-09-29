@@ -36,7 +36,7 @@ namespace Feature.LoyaltyPoints.Website.Repositories
         public CouponsBaseJsonResult GetUnusedCoupons()
         {
             var result = new CouponsBaseJsonResult(_storefrontContext);
-            result.Initialize();
+            result.Initialize(_manager.GetCoupons(_storefrontContext,_visitorContext));
             result.Success = true;
             return result;
         }

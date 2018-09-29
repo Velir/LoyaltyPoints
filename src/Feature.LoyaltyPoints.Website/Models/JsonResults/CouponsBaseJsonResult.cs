@@ -1,6 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Feature.LoyaltyPoints.Website.Managers;
 using Sitecore.Commerce.XA.Foundation.Common;
 using Sitecore.Commerce.XA.Foundation.Common.Models.JsonResults;
+using Sitecore.Commerce.XA.Foundation.Connect;
+using Sitecore.Commerce.XA.Foundation.Connect.Managers;
 
 namespace Feature.LoyaltyPoints.Website.Models.JsonResults
 {
@@ -13,9 +17,9 @@ namespace Feature.LoyaltyPoints.Website.Models.JsonResults
             
         }
 
-        public virtual void Initialize(/* TODO GetCustomerCouponsResult result*/)
+        public virtual void Initialize(ManagerResponse<GetCouponsResult, IEnumerable<Coupon>> managerResponse)
         {
-            Coupons = new List<Coupon>{new Coupon{Name="1"}, new Coupon { Name = "2" } , new Coupon { Name = "3" } };
+            Coupons = managerResponse.Result.ToList();
         }
  
     }
