@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
+using Feature.LoyaltyPoints.Website.Managers;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Engine;
 using Sitecore.Commerce.Engine.Connect.Entities;
@@ -32,14 +33,19 @@ namespace Feature.LoyaltyPoints.Website.Pipelines
             // Below in lieu of PipelineUtility.ValidateArguments, which is used by Sitecore's Commerce.Engine.Connect processors, but is internal.
             GetCouponsRequest request = args.Request as GetCouponsRequest;
             GetCouponsResult result = args.Result as GetCouponsResult;
-            Assert.IsNotNull(request, "args.Request");
-            Assert.IsNotNull(result, "args.Result");
+            Assert.IsNotNull(request, $"args.Request is null or not of type {nameof(GetCouponsRequest)}.");
+            Assert.IsNotNull(result, $"args.Result is null or not of type {nameof(GetCouponsResult)}.");
               
-            Container container = this.GetContainer(request.Shop.Name, string.Empty, request.CommerceCustomer.ExternalId, "", args.Request.CurrencyCode, new DateTime?());
-            EntityView customerView = this.GetEntityView(container, request.CommerceCustomer.ExternalId, string.Empty, "Customer", string.Empty, (ServiceProviderResult)result);
+            Container container = this.GetContainer(request.Shop.Name, string.Empty, request.CustomerId, "", args.Request.CurrencyCode, new DateTime?());
+
+
+            EntityView customerView = this.GetEntityView(container, request.CustomerId, string.Empty, "LoyaltyCoupons", string.Empty, result);
+
             if (!result.Success)
                 return;
              List<Coupon> couponList = new List<Coupon>();
+       
+            // Is it standard practice to put models in a shared DLL? If not, how do I see properties on the returned objects.
             EntityView loyaltyCoupons = customerView.ChildViews.Where<Model>((Func<Model, bool>)(v => v.Name.Equals("LoyaltyCoupons", StringComparison.OrdinalIgnoreCase))).FirstOrDefault<Model>() as EntityView;
             if (loyaltyCoupons != null || loyaltyCoupons.ChildViews.Any<Model>())
             {
@@ -49,7 +55,8 @@ namespace Feature.LoyaltyPoints.Website.Pipelines
                     couponList.Add(couponEntity);
                 }
             }
-            result.Coupons = (IReadOnlyCollection<Coupon>)couponList.AsReadOnly();  //EXPECTED FOR NOW
+
+            result.Coupons = couponList; //EXPECTED FOR NOW
         }
 
         private Coupon TranslateViewToCoupon(EntityView entityView, ServiceProviderResult result)

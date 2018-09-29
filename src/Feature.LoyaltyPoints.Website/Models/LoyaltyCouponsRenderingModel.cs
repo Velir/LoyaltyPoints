@@ -6,6 +6,7 @@ using System.Web;
 using Sitecore.Commerce.XA.Foundation.Common.Models;
 using Sitecore.Commerce.XA.Foundation.Common;
 using Feature.LoyaltyPoints.Website.Managers;
+using Sitecore.Commerce.Plugin.Coupons;
 using Sitecore.Commerce.XA.Foundation.Connect.Managers;
 
 namespace Feature.LoyaltyPoints.Website.Models
@@ -25,9 +26,9 @@ namespace Feature.LoyaltyPoints.Website.Models
 
         private IEnumerable<Coupon> GetSamples() => new List<Coupon>
         {
-            new Coupon{Name="LoyaltyCouponsRenderingModel1"},
-            new Coupon{Name="LoyaltyCouponsRenderingModel2"},
-            new Coupon{Name="LoyaltyCouponsRenderingModel3"}
+            new Coupon{Code="LoyaltyCouponsRenderingModel1"},
+            new Coupon{Code="LoyaltyCouponsRenderingModel2"},
+            new Coupon{Code="LoyaltyCouponsRenderingModel3"}
         };
 
         private IEnumerable<Coupon> GetUserData() => this.managerResponse.Result;

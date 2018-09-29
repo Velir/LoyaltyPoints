@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Feature.LoyaltyPoints.Website.Models; 
+using Sitecore.Commerce.Plugin.Coupons;
 using Sitecore.Commerce.XA.Foundation.Common;
 using Sitecore.Commerce.XA.Foundation.Connect;
 using Sitecore.Commerce.XA.Foundation.Connect.Managers;

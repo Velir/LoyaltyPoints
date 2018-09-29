@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CommerceOps.Sitecore.Commerce.Engine;
-using Feature.LoyaltyPoints.Website.Models;
+
+using Feature.LoyaltyPoints.Website.Pipelines;
+using Sitecore.Commerce.Plugin.Coupons;
 using Sitecore.Commerce.Services.Customers;
 using Sitecore.Commerce.XA.Foundation.Common;
 using Sitecore.Commerce.XA.Foundation.Connect;
@@ -30,7 +32,7 @@ namespace Feature.LoyaltyPoints.Website.Managers
 
             string customerId = visitorContext.CustomerId;
             
-            GetCouponsResult coupons = _couponsServiceProvider.GetCustomerCoupons(new GetCustomerCouponRequest(customerId, storefront.CurrentStorefront.ShopName));
+            GetCouponsResult coupons = _couponsServiceProvider.GetCustomerCoupons(new GetCouponsRequest(customerId, storefront.CurrentStorefront.ShopName));
 
             if (coupons?.Coupons != null && coupons.Coupons.Any())
             {
