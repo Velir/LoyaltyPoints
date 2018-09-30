@@ -60,7 +60,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
             return new CouponModel
             {
-                Name = coupon.Id, 
+                EntityId = coupon.Id,
+                Name = coupon.Code, 
                 Code = coupon.Code,
                 DateEarned = coupon.DateCreated,
                 IsApplied = coupon.UsageCount > 0,  //TODO Determine how system marks a private coupon that has been used.
