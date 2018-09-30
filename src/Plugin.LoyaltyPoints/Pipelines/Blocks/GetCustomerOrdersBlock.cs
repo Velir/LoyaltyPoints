@@ -49,15 +49,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 }
                 else
                 {
-                    //TODO NEXT SendCoupon pipeline (EnsureCoupons, Allocate, Notify)
-                    /// use IDuplicatePromotionPipeline to create new promotion
-                    /// 
-                    //TODO LATER Validate LP count, mark LPs applied, handle within transaction
                     var result = await this._allocateCouponPipeline.Run(new AllocateCouponArgument(customer, commerceList.Items),
                         context);
-
-                    // TODO Move to block.
-                   
                 }
             }
             return customer;

@@ -21,10 +21,10 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     /// Developer notes:
     /// I'm not sure whether allocation is a necessary step for coupons
     /// to be applied, or whether this is just for managing workflow on
-    /// screens. I will add that step if necesary.
+    /// screens. I will add that step if necessary.
     ///
     /// I will try adding the coupon to a list by simply adding the list
-    /// to the MemberOfLists component, and saving the item. That seens like
+    /// to the MemberOfLists component, and saving the item. That seems like
     /// a nice way of managing this, if possible.
     /// </summary>
     class CreateCouponsBlock : PipelineBlock<CreateCouponsArgument, CreateCouponsArgument, CommercePipelineExecutionContext>

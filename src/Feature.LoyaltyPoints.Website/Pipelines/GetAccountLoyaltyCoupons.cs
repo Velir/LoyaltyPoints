@@ -45,15 +45,10 @@ namespace Feature.LoyaltyPoints.Website.Pipelines
                 return;
             var couponList = customerView.ChildViews.Select(v => new Coupon {Code = v.Name}).ToList();
        
-            //TODO Get Coupon entities, and use that to detemine whether they have been used, what there code is, and when they were issued.
-             
+            //TODO Get Coupon entities, and use that to determine whether they have been used, what there code is, and when they were issued.
+            
 
             result.Coupons = couponList;  
-        }
-
-        private Coupon TranslateViewToCoupon(EntityView entityView, ServiceProviderResult result)
-        {
-            throw new NotImplementedException();
         }
     }
 }

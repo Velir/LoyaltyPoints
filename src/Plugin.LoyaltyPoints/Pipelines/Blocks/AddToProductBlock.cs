@@ -17,8 +17,6 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     //        add to product
     //        persist product
 
-
-//TODO Better name.
     [PipelineDisplayName("LoyaltyPoints.Blocks.AddToProduct")]
     public class AddToProductBlock : PipelineBlock<AddLoyaltyPointsArgument, SellableItem, CommercePipelineExecutionContext>
     {
