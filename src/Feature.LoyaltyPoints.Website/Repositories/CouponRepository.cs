@@ -27,16 +27,15 @@ namespace Feature.LoyaltyPoints.Website.Repositories
             _visitorContext = visitorContext;
         }
 
-        public object GetUnusedCouponsRenderingModel()
+        public LoyaltyCouponsRenderingModel GetUnusedCouponsRenderingModel()
         {
-            var coupons = _manager.GetCoupons(_storefrontContext, _visitorContext);  //TODO Remove if not needed.
-            return new LoyaltyCouponsRenderingModel(coupons);
+            return new LoyaltyCouponsRenderingModel();
         }
 
-        public CouponsBaseJsonResult GetUnusedCoupons()
+        public CouponsBaseJsonResult GetUnusedCoupons(IStorefrontContext storefrontContext, IVisitorContext visitorContext)
         {
-            var result = new CouponsBaseJsonResult(_storefrontContext);
-            result.Initialize(_manager.GetCoupons(_storefrontContext,_visitorContext));
+            var result = new CouponsBaseJsonResult(storefrontContext);
+            result.Initialize(_manager.GetCoupons(storefrontContext,_visitorContext));
             result.Success = true;
             return result;
         }
