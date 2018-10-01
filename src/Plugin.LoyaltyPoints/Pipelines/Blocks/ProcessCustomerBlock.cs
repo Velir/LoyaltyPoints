@@ -13,13 +13,13 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
 
     /// <summary>
-    /// This pipeline interates all orders for customer,
-    /// finds qualifying ordrers (based on policy method),
+    /// This pipeline iterates all orders for customer,
+    /// finds qualifying orders (based on policy method),
     /// finds qualifying order lines (e.g. no returns, etc.),
     /// again using policy logic.
     /// 
     /// It takes the remaining loyalty point entities,
-    /// calculates the total sum, markes them as applied, and
+    /// calculates the total sum, marks them as applied, and
     /// updates a customer total component, which lists
     /// total entity points, and entity points for which
     /// coupons have been issued.
