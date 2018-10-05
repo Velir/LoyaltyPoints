@@ -42,9 +42,6 @@ namespace Plugin.LoyaltyPoints
                 .AddPipeline<IMakeComponentPipeline, MakeComponentPipeline>(
                     configure => { configure.Add<MakeComponentBlock>(); })
 
-                .AddPipeline<IAllocateCouponPipeline, AllocateCouponPipeline>(
-                    configure => { configure.Add<AllocateCouponBlock>(); })
-
                 .AddPipeline<ICreateCouponsPipeline, CreateCouponsPipeline>(
                     configure => { configure.Add<CreateCouponsBlock>(); })
 

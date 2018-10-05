@@ -8,8 +8,6 @@ namespace Plugin.LoyaltyPoints.Entities
         {
             Id = Constants.EntityId;
         }
-
-        public string CurrentPromotion { get; set; }
         public int SequenceNumber { get; set; }
     }
 }

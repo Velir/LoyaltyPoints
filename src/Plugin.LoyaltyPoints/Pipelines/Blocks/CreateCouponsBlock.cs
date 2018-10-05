@@ -24,18 +24,15 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
     /// Update: Allocation is required. TODO Add allocation.
     ///
     /// Update: It is not necessary to create new promotions, since coupon blocks can be added to an approved promotion.
-    /// TODO: Remove logic to create new promotions, rename <see cref="LoyaltyPointsPolicy.TemmplatePromotion"/> to "Promotion" and simply add coupons to that promotion.
-    /// Note: It is still necessary to 
     /// </summary>
     class CreateCouponsBlock : PipelineBlock<CreateCouponsArgument, CreateCouponsArgument, CommercePipelineExecutionContext>
     {
         private readonly GetManagedListCommand _getManagedListCommand;
         private readonly CreateManagedListCommand _createManagedListCommand;
+        private readonly AddListEntitiesPipeline _addListEntitiesPipeline;
         private readonly GetListCountCommand _getListCountCommand;
         private readonly FindEntityCommand _findEntityCommand;
-        private readonly DuplicatePromotionCommand _duplicatePromotionCommand;
         private readonly AddPrivateCouponCommand _addPrivateCouponCommand;
-        private readonly AddListEntitiesPipeline _addListEntitiesPipeline;
         private readonly PersistEntityCommand _persistEntityCommand;
         private readonly GetEntitiesInListCommand _getEntitiesInListCommand;
 
@@ -46,8 +43,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             CreateManagedListCommand createManagedListCommand,
             GetListCountCommand getListCountCommand,
             FindEntityCommand findEntityCommand,
-            DuplicatePromotionCommand duplicatePromotionCommand,
             AddPrivateCouponCommand addPrivateCouponCommand,
+            
             AddListEntitiesPipeline addListEntitiesPipeline,
             PersistEntityCommand persistEntityCommand,
             GetEntitiesInListCommand getEntitiesInListCommand
@@ -57,8 +54,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             _createManagedListCommand = createManagedListCommand;
             _getListCountCommand = getListCountCommand;
             _findEntityCommand = findEntityCommand;
-            _duplicatePromotionCommand = duplicatePromotionCommand;
-            _addPrivateCouponCommand = addPrivateCouponCommand;
+            _addPrivateCouponCommand = addPrivateCouponCommand; 
             _addListEntitiesPipeline = addListEntitiesPipeline;
             _persistEntityCommand = persistEntityCommand;
             _getEntitiesInListCommand = getEntitiesInListCommand;
@@ -132,14 +128,12 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
             entity.SequenceNumber++;
             string suffix = entity.SequenceNumber.ToString();
-            var promotion = await CreatePromotion(context, suffix);
+            var promotion = await GetPromotion(context);
             if (promotion == null)
             {
                 context.Abort($"{this.Name}: Unable to generate LoyaltyPoints promotion.", context);
                 return;
             }
-            entity.CurrentPromotion = promotion.FriendlyId;
-
        
             await _addPrivateCouponCommand.Process(
                 context.CommerceContext,
@@ -147,16 +141,22 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 policy.CouponPrefix,
                 suffix,
                 policy.CouponBlockSize);
-            promotion.SetComponent(new ApprovalComponent(context.GetPolicy<ApprovalStatusPolicy>().Approved));
-            await _persistEntityCommand.Process(context.CommerceContext, promotion);
+            
+            // await _persistEntityCommand.Process(context.CommerceContext, promotion);
+            // TODO Remove above line if code works without saving entity. Judging by the pipeline block list, it should not be needed.
         }
 
-        private async Task<Promotion> CreatePromotion(CommercePipelineExecutionContext context, string suffix)
+        private async Task<Promotion> GetPromotion(CommercePipelineExecutionContext context)
         {
-            string templatePromotion = context.GetPolicy<LoyaltyPointsPolicy>().TemplatePromotion;
-
-            string newPromotion = string.Format(Constants.GeneratedPromotion, suffix); 
-            return await this._duplicatePromotionCommand.Process(context.CommerceContext, templatePromotion, newPromotion) as Promotion;
+            string promotionEntityId = context.GetPolicy<LoyaltyPointsPolicy>().LoyaltyPointPromotion;
+            var promotion = await this._findEntityCommand.Process(context.CommerceContext, typeof(Promotion), promotionEntityId) as Promotion;
+            if (promotion == null)
+            {
+                // By adding a message with type "Error" to the CommerceContext we will force the transaction to get rolled back.
+                context.CommerceContext.AddMessage(new CommandMessage{Code = context.GetPolicy<KnownResultCodes>().Error, Text = $"{Name}: Promotion {promotionEntityId} not found."});
+            }
+            return promotion;
+            
         }
     }
 }
