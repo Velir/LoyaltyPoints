@@ -144,6 +144,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             
             // await _persistEntityCommand.Process(context.CommerceContext, promotion);
             // TODO Remove above line if code works without saving entity. Judging by the pipeline block list, it should not be needed.
+            
         }
 
         private async Task<Promotion> GetPromotion(CommercePipelineExecutionContext context)
