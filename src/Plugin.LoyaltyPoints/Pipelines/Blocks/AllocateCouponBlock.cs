@@ -96,7 +96,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                        });
 
 
-            LoyaltyPointsEntity entity = await 
+            LoyaltyPointsEntity loyaltyPointsEntity = await 
                 _findEntityCommmand.Process(
                     context.CommerceContext, 
                     typeof(LoyaltyPointsEntity), 
@@ -105,70 +105,39 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 as LoyaltyPointsEntity;
 
 
-            entity.Id = Constants.EntityId;  // Entity is generated with random ID. We want a singleton.
+            loyaltyPointsEntity.Id = Constants.EntityId;  // Entity is generated with random ID. We want a singleton.
             
             Promotion promotion;
-            if (string.IsNullOrEmpty(entity.CurrentPromotion))
+            if (string.IsNullOrEmpty(loyaltyPointsEntity.CurrentPromotion))
             {
-                promotion = await CreatePromtion(context.CommerceContext, entity.SequenceNumber++);
-                entity.CurrentPromotion = promotion.FriendlyId;
+                promotion = await CreatePromtion(context.CommerceContext, loyaltyPointsEntity.SequenceNumber++);
+                loyaltyPointsEntity.CurrentPromotion = promotion.FriendlyId;
                 promotion = await _addPrivateCouponCommand.Process(context.CommerceContext, promotion.Id, policy.CouponPrefix,
-                    entity.SequenceNumber.ToString(), policy.CouponBlockSize);
+                    loyaltyPointsEntity.SequenceNumber.ToString(), policy.CouponBlockSize);
             }
             else
             {
-                promotion = await GetPromotion(context.CommerceContext, entity.CurrentPromotion);
+                promotion = await GetPromotion(context.CommerceContext, loyaltyPointsEntity.CurrentPromotion);
             }
 
-            string entityId = $"Entity-PrivateCouponGroup-{policy.CouponPrefix}-{entity.SequenceNumber}";
-            PrivateCouponGroup @group= await _findEntityCommmand.Process(context.CommerceContext,typeof(PrivateCouponGroup), entityId) as PrivateCouponGroup;
-            await _newCouponAllocationCommand.Process(context.CommerceContext, promotion, group, 1);
-            var allocated = group.GetComponent<CouponAllocationComponent>();
+            string entityId = $"Entity-PrivateCouponGroup-{policy.CouponPrefix}-{loyaltyPointsEntity.SequenceNumber}";
+            PrivateCouponGroup couponGroup= await _findEntityCommmand.Process(context.CommerceContext,typeof(PrivateCouponGroup), entityId) as PrivateCouponGroup;
+            await _newCouponAllocationCommand.Process(context.CommerceContext, promotion, couponGroup, 1);
+            var allocated = couponGroup.GetComponent<CouponAllocationComponent>();
             string coupon = allocated.Codes.First(); //This is always returning the same code.
 
              
 
-            //NEXT: Each call to CouponAllocationCommand is creating a new CouponAlloctionComponent (which is contrary to how I thought
-            // components worked (like properties). The required logic, which seems ugly, to get the last promotion is:
-            // group.Components.OfType<CouponAllocationComponent>().Skip(AllocationCount -1).First()
-            // and to see if any are left:
-            // Total - Allocation > 0
-            // I'm not sure how to avoid a race condition between two processes: Maybe a read lock on the Group??
-            await _persistEntityCommand.Process(context.CommerceContext, group);
-             
-            
-         
-
-            entity = await _persistEntityCommand.Process(context.CommerceContext, entity) as LoyaltyPointsEntity;
+           
+            await _persistEntityCommand.Process(context.CommerceContext, couponGroup);
+            await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
 
               
 
-            // Discovery, this should go to its own pipeline eventually
-            // TODO Mark loyalty points applied, generate coupon, notifiy xConnect (Get contact ID, create event, pass coupon ID)
-            //	 
-            string promotionId = policy.TemplatePromotion;
-
-            string prefix = policy.CouponPrefix;
-            string suffix = $"_{DateTime.Now.Ticks.ToString().Substring(0, 9)}";
-            int total = policy.CouponBlockSize;
+      
 
 
-            // create 1 (initially), allocate it. 
-
-            // later: create batch if needed, allocate first off of unallocated list.
-            //var coupon = await
-            //    _addPrivateCouponCommand.Process(context.CommerceContext, promotionId, prefix, suffix, total);
-            //var privateCouponGroup =
-            //    new PrivateCouponGroup { Id = $"Entity-PrivateCouponGroup-{prefix}-{suffix}" };
-            //privateCouponGroup.FriendlyId = privateCouponGroup.Id;
-            ////   var r = await _newCouponAllocationCommand.Process(context.CommerceContext, coupon,
-            ////       privateCouponGroup, 5);
-
-            //var model = context.CommerceContext.GetModel<PersistedEntityModel>();
-            //logger.LogInformation(
-            //    coupon != null ? $"{Name}: Coupon (ID:{model.EntityFriendlyId}) created for customer {customer.Id}"
-            //    : "Coupon not created.");
-            //throw new NotImplementedException();
+            
 
             return arg;
         }

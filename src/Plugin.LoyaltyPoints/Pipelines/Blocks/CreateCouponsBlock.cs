@@ -14,18 +14,18 @@ using Sitecore.Framework.Pipelines;
 namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 {
     /// <summary>
-    /// Ensures existance of available coupon list, checks count.
-    /// If necessary, creates new promotion, creates coupon, adds to
-    /// list, and  approves promotion.
+    /// Ensures existence of available coupon list, checks count.
+    /// If necessary, creates coupons, add to list.
     ///
     /// Developer notes:
     /// I'm not sure whether allocation is a necessary step for coupons
     /// to be applied, or whether this is just for managing workflow on
     /// screens. I will add that step if necessary.
+    /// Update: Allocation is required. TODO Add allocation.
     ///
-    /// I will try adding the coupon to a list by simply adding the list
-    /// to the MemberOfLists component, and saving the item. That seems like
-    /// a nice way of managing this, if possible.
+    /// Update: It is not necessary to create new promotions, since coupon blocks can be added to an approved promotion.
+    /// TODO: Remove logic to create new promotions, rename <see cref="LoyaltyPointsPolicy.TemmplatePromotion"/> to "Promotion" and simply add coupons to that promotion.
+    /// Note: It is still necessary to 
     /// </summary>
     class CreateCouponsBlock : PipelineBlock<CreateCouponsArgument, CreateCouponsArgument, CommercePipelineExecutionContext>
     {
@@ -73,21 +73,20 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 LoyaltyPointsEntity loyaltyPointsEntity = await _findEntityCommand.Process(context.CommerceContext,typeof(LoyaltyPointsEntity),
                             Constants.EntityId,shouldCreate: true) as LoyaltyPointsEntity;
                 var policy = context.CommerceContext.GetPolicy<LoyaltyPointsPolicy>();
-                ManagedList list = await _getManagedListCommand.Process(context.CommerceContext, Constants.AvailableCouponsList);
-                if (list == null)
-                {
-                    context.Logger.LogInformation($"{this.Name}: List {Constants.AvailableCouponsList} not found. Creating it.");
-                    list = await _createManagedListCommand.Process(context.CommerceContext, Constants.AvailableCouponsList);
-                }
+                var list = await EnsureList(context, Constants.AvailableCouponsList);
+
                 long count = await _getListCountCommand.Process(context.CommerceContext, Constants.AvailableCouponsList);
-                context.Logger.LogInformation(
+                context.Logger.LogDebug(
                         $"{this.Name}: List {Constants.AvailableCouponsList} has {count} items.");
+
                 if (count <= policy.ReprovisionTriggerCount)
                 {
-                    context.Logger.LogInformation(
+                    context.Logger.LogDebug(
                         $"{this.Name}: List {Constants.AvailableCouponsList} is at or under reprovision count of {policy.ReprovisionTriggerCount}.");
+
                     await AddCoupons(context, loyaltyPointsEntity);
                     await CopyCouponsToList(context, loyaltyPointsEntity, list);
+
                     await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
                     await _persistEntityCommand.Process(context.CommerceContext, list);
                 }
@@ -102,6 +101,18 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             // TODO Discuss deadlock avoidance patterns with Rob.
 
             return arg;
+        }
+
+        private async Task<ManagedList> EnsureList(CommercePipelineExecutionContext context, string listName)
+        {
+            ManagedList list = await _getManagedListCommand.Process(context.CommerceContext, listName);
+            if (list == null)
+            {
+                context.Logger.LogInformation($"{this.Name}: List {listName} not found. Creating it.");
+                list = await _createManagedListCommand.Process(context.CommerceContext, listName);
+            }
+
+            return list;
         }
 
         private async Task CopyCouponsToList(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity, ManagedList targetList)
