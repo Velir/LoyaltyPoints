@@ -6,6 +6,8 @@
 
         public const string AvailableCouponsList = "LoyaltyPoints-AvailableCoupons";
 
+        public const string GeneratedPromotion = "LoyaltyPointsGeneratedPromotion{0}";
+
         public const string LoyaltyPoints = nameof(LoyaltyPoints);
 
         // TODO Replace with Sitecore.Commerce.Constants.ContactSource

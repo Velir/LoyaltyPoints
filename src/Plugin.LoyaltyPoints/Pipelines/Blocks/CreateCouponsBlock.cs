@@ -26,6 +26,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         private readonly AddListEntitiesPipeline _addListEntitiesPipeline;
         private readonly GetListCountCommand _getListCountCommand;
         private readonly FindEntityCommand _findEntityCommand;
+        private readonly DuplicatePromotionCommand _duplicatePromotionCommand;
         private readonly AddPrivateCouponCommand _addPrivateCouponCommand;
         private readonly NewCouponAllocationCommand _newCouponAllocationCommand;
         private readonly PersistEntityCommand _persistEntityCommand;
@@ -37,6 +38,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             CreateManagedListCommand createManagedListCommand,
             GetListCountCommand getListCountCommand,
             FindEntityCommand findEntityCommand,
+            DuplicatePromotionCommand duplicatePromotionCommand,
             AddPrivateCouponCommand addPrivateCouponCommand,
             NewCouponAllocationCommand newCouponAllocationCommand,
             AddListEntitiesPipeline addListEntitiesPipeline,
@@ -48,6 +50,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             _createManagedListCommand = createManagedListCommand;
             _getListCountCommand = getListCountCommand;
             _findEntityCommand = findEntityCommand;
+            _duplicatePromotionCommand = duplicatePromotionCommand;
             _addPrivateCouponCommand = addPrivateCouponCommand;
             _newCouponAllocationCommand = newCouponAllocationCommand;
             _addListEntitiesPipeline = addListEntitiesPipeline;
@@ -99,35 +102,53 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 
                 if (count <= policy.ReprovisionTriggerCount)
                 {
-                   
-
                     loyaltyPointsEntity.IsLocked = true;
                     await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
 
                     context.Logger.LogDebug($"{this.Name}: List {Constants.AvailableCouponsList} is at or under reprovision count of {policy.ReprovisionTriggerCount}.");
+                    
+                    loyaltyPointsEntity.SequenceNumber++;
+                    string suffix = loyaltyPointsEntity.SequenceNumber.ToString();
 
-                    await CreateAndAllocateCoupons(context, loyaltyPointsEntity);
+                    string promotionName = string.Format(Constants.GeneratedPromotion, suffix);
+                    Promotion promotion = await GeneratePromotion(context, promotionName);
+                    if (promotion == null)
+                    {
+                        await context.AbortWithError("Unable to generate promotion {0}.", "PromotionNotFound",
+                            promotionName);
+                        return;
+                    }
+
+                    await AddCoupons(context, promotion, suffix);
                     if (context.IsNullOrHasErrors())
                     {
                         return;
                     }
+
+                    await AllocateCoupons(context, promotion, suffix);
+                    if (context.IsNullOrHasErrors())
+                    {
+                        return;
+                    }
+                     
+                    ApprovePromotion(context, promotion);
 
                     await CopyCouponsToList(context, loyaltyPointsEntity, list);
                     if (context.IsNullOrHasErrors())
                     {
                         return;
                     }
+
                     loyaltyPointsEntity.IsLocked = false;
-                    await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
                     await _persistEntityCommand.Process(context.CommerceContext, list);
+                    await _persistEntityCommand.Process(context.CommerceContext, promotion);
+                    await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
                 }
             });
             
 
             return arg;
         }
-
-        
 
         private async Task<ManagedList> EnsureList(CommercePipelineExecutionContext context, string listName)
         {
@@ -141,29 +162,28 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             return list;
         }
 
-        private async Task CopyCouponsToList(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity, ManagedList targetList)
+        /// <summary>
+        /// Create a new promotion so that coupons can be provisioned.
+        /// Coupons cannot be added to an approved promotion.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="promotionName"></param>
+        /// <returns></returns>
+        private async Task<Promotion> GeneratePromotion(CommercePipelineExecutionContext context, string promotionName)
         {
-            var policy = context.GetPolicy<LoyaltyPointsPolicy>();
-            string sourceListName = $"promotion-{policy.CouponPrefix}-{entity.SequenceNumber}-allocatedcoupons";
-            var coupons = await _getEntitiesInListCommand.Process(context.CommerceContext,
-                sourceListName, 0,
-                policy.CouponBlockSize);
-            await _addListEntitiesPipeline.Run(new ListEntitiesArgument(coupons, targetList.Name), context);
+            string rootPromotion = context.GetPolicy<LoyaltyPointsPolicy>().TemplatePromotionFriendlyId;
+
+            Promotion promotion = await this._duplicatePromotionCommand.Process(context.CommerceContext, rootPromotion, promotionName);
+            if (context.IsNullOrHasErrors())
+            {
+                return null;
+            }
+            return promotion;
         }
 
-        private async Task CreateAndAllocateCoupons(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity)
+        private async Task AddCoupons(CommercePipelineExecutionContext context, Promotion promotion, string suffix)
         {
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
-            entity.SequenceNumber++;
-            string suffix = entity.SequenceNumber.ToString();
-            string promotionEntityId = context.GetPolicy<LoyaltyPointsPolicy>().LoyaltyPointPromotion;
-
-            var promotion = await this._findEntityCommand.Process(context.CommerceContext, typeof(Promotion), promotionEntityId) as Promotion;
-            if (promotion == null)
-            {
-                await context.AbortWithError("Unable to find promotion {0}.", "PromotionNotFound", promotionEntityId);
-                return;
-            }
        
             await _addPrivateCouponCommand.Process(
                 context.CommerceContext,
@@ -171,10 +191,14 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 policy.CouponPrefix,
                 suffix,
                 policy.CouponBlockSize);
-            if (context.IsNullOrHasErrors())
-            {
-                return;
-            }
+        }
+
+        /// <summary>
+        /// Coupons must be in allocated to be usable by customers.
+        /// </summary>
+        private async Task  AllocateCoupons(CommercePipelineExecutionContext context, Promotion promotion, string suffix)
+        {
+            var policy = context.GetPolicy<LoyaltyPointsPolicy>();
 
             string privateCouponGroupId = $"{CommerceEntity.IdPrefix<PrivateCouponGroup>()}{policy.CouponPrefix}-{suffix}";
             var privateCouponGroup = await _findEntityCommand.Process(context.CommerceContext,
@@ -186,14 +210,24 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 await context.AbortWithError("Unable to find PrivateCouponGroup { 0}.", "PrivateCouponGroupNotFound", privateCouponGroupId);
                 return;
             }
-
-            // Coupons must be in allocated to be usable by customers.
+            
             await _newCouponAllocationCommand.Process(context.CommerceContext, promotion, privateCouponGroup,
                 policy.CouponBlockSize);
-
-
         }
 
-        
+        private async Task CopyCouponsToList(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity, ManagedList targetList)
+        {
+            var policy = context.GetPolicy<LoyaltyPointsPolicy>();
+            string sourceListName = $"promotion-{policy.CouponPrefix}-{entity.SequenceNumber}-allocatedcoupons";
+            var coupons = await _getEntitiesInListCommand.Process(context.CommerceContext,
+                sourceListName, 0,
+                policy.CouponBlockSize);
+            await _addListEntitiesPipeline.Run(new ListEntitiesArgument(coupons, targetList.Name), context);
+        }
+
+        private static void ApprovePromotion(CommercePipelineExecutionContext context, Promotion promotion)
+        {
+            promotion.SetComponent(new ApprovalComponent(context.GetPolicy<ApprovalStatusPolicy>().Approved));
+        }
     }
 }

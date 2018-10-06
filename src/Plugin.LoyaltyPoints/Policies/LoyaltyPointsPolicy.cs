@@ -18,7 +18,7 @@ namespace Plugin.LoyaltyPoints.Policies
     {
         public LoyaltyPointsPolicy()
         {
-            this.LoyaltyPointPromotion = "Entity-Promotion-Habitat_LoyaltyPointsPromotionBook-Loyalty Points Promotion";
+            this.TemplatePromotionFriendlyId = "Habitat_LoyaltyPointsPromotionBook-Loyalty Points Promotion";
             this.CouponBlockSize = 20;
             this.ReprovisionTriggerCount = 5;
             this.CouponPrefix = "LP";
@@ -37,7 +37,7 @@ namespace Plugin.LoyaltyPoints.Policies
         /// This promotion will be used to generate promotions for the Loyalty Points functionality.
         /// Note that the generated promotions will be automatically approved.
         /// </summary>
-        public string LoyaltyPointPromotion { get; set; }
+        public string TemplatePromotionFriendlyId { get; set; }
 
         /// <summary>
         /// The number of coupon codes to genearate for each block
