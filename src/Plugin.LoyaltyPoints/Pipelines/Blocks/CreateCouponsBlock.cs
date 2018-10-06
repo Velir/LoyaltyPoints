@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Plugin.LoyaltyPoints.Entities;
+using Plugin.LoyaltyPoints.Helpers;
 using Plugin.LoyaltyPoints.Pipelines.Arguments;
 using Plugin.LoyaltyPoints.Policies;
 using Sitecore.Commerce.Core;
@@ -14,16 +15,9 @@ using Sitecore.Framework.Pipelines;
 namespace Plugin.LoyaltyPoints.Pipelines.Blocks
 {
     /// <summary>
-    /// Ensures existence of available coupon list, checks count.
-    /// If necessary, creates coupons, add to list.
+    /// Ensures list <see cref="Constants.AvailableCouponsList"/> has number of coupons specified in <see cref="policy.ReprovisionTriggerCount"/>.
     ///
-    /// Developer notes:
-    /// I'm not sure whether allocation is a necessary step for coupons
-    /// to be applied, or whether this is just for managing workflow on
-    /// screens. I will add that step if necessary.
-    /// Update: Allocation is required. TODO Add allocation.
-    ///
-    /// Update: It is not necessary to create new promotions, since coupon blocks can be added to an approved promotion.
+    /// Note: By running update in a transaction, this block guards against race conditions. If two processors ran this minion, the 
     /// </summary>
     class CreateCouponsBlock : PipelineBlock<CreateCouponsArgument, CreateCouponsArgument, CommercePipelineExecutionContext>
     {
@@ -33,10 +27,10 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         private readonly GetListCountCommand _getListCountCommand;
         private readonly FindEntityCommand _findEntityCommand;
         private readonly AddPrivateCouponCommand _addPrivateCouponCommand;
+        private readonly NewCouponAllocationCommand _newCouponAllocationCommand;
         private readonly PersistEntityCommand _persistEntityCommand;
         private readonly GetEntitiesInListCommand _getEntitiesInListCommand;
-
-        //TODO Break this monster class up. Too many concerns. :(
+        
 
         public CreateCouponsBlock(
             GetManagedListCommand getManagedListCommand,
@@ -44,7 +38,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             GetListCountCommand getListCountCommand,
             FindEntityCommand findEntityCommand,
             AddPrivateCouponCommand addPrivateCouponCommand,
-            
+            NewCouponAllocationCommand newCouponAllocationCommand,
             AddListEntitiesPipeline addListEntitiesPipeline,
             PersistEntityCommand persistEntityCommand,
             GetEntitiesInListCommand getEntitiesInListCommand
@@ -54,57 +48,93 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             _createManagedListCommand = createManagedListCommand;
             _getListCountCommand = getListCountCommand;
             _findEntityCommand = findEntityCommand;
-            _addPrivateCouponCommand = addPrivateCouponCommand; 
+            _addPrivateCouponCommand = addPrivateCouponCommand;
+            _newCouponAllocationCommand = newCouponAllocationCommand;
             _addListEntitiesPipeline = addListEntitiesPipeline;
             _persistEntityCommand = persistEntityCommand;
             _getEntitiesInListCommand = getEntitiesInListCommand;
         }
 
+ 
         public override async Task<CreateCouponsArgument> Run(
             CreateCouponsArgument arg,
             CommercePipelineExecutionContext context)
         {
             await this._getManagedListCommand.PerformTransaction(context.CommerceContext, async () =>
             {
+                var policy = context.CommerceContext.GetPolicy<LoyaltyPointsPolicy>();
+
                 LoyaltyPointsEntity loyaltyPointsEntity = await _findEntityCommand.Process(context.CommerceContext,typeof(LoyaltyPointsEntity),
                             Constants.EntityId,shouldCreate: true) as LoyaltyPointsEntity;
-                var policy = context.CommerceContext.GetPolicy<LoyaltyPointsPolicy>();
+                if (loyaltyPointsEntity == null)
+                {
+                    await context.AbortWithError("Unable to access or create LoyaltyPointsEntity {0}",
+                        "LoyaltyPointsEntityNotReturned", Constants.EntityId);
+                    return;
+                }
+
+                // Prevent simultaneous updates, in case multiple minion instances. Since these might be on scaled servers, mutex lock uses database field. 
+                // Lock is read before count is checked, so that when first process finishes and releases row, counts will be replenished.
+                // Notes:
+                // 1. If this pipeline aborts, the lock should be rolled back.
+                // 2. Assuming transactions are enabled, the second process should never see IsLocked=true, as the read won't return until the lock is released. However,
+                //    this syntax should work on a non-transactional environment, and makes the intent of the code clearer.
+                if (loyaltyPointsEntity.IsLocked)
+                {
+                    await context.AbortWithError("{0} is locked. If this condition persists, unset this value through the database.", "EntityLocked", Constants.EntityId);
+                    return;
+                }
+                
                 var list = await EnsureList(context, Constants.AvailableCouponsList);
+                if (list == null)
+                {
+                    await context.AbortWithError("Unable to create list {0}", "UnableToCreateList", Constants.AvailableCouponsList);
+                    return;
+                }
 
                 long count = await _getListCountCommand.Process(context.CommerceContext, Constants.AvailableCouponsList);
-                context.Logger.LogDebug(
-                        $"{this.Name}: List {Constants.AvailableCouponsList} has {count} items.");
+                context.Logger.LogDebug($"{this.Name}: List {Constants.AvailableCouponsList} has {count} items.");
+
+                
 
                 if (count <= policy.ReprovisionTriggerCount)
                 {
-                    context.Logger.LogDebug(
-                        $"{this.Name}: List {Constants.AvailableCouponsList} is at or under reprovision count of {policy.ReprovisionTriggerCount}.");
+                   
 
-                    await AddCoupons(context, loyaltyPointsEntity);
+                    loyaltyPointsEntity.IsLocked = true;
+                    await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
+
+                    context.Logger.LogDebug($"{this.Name}: List {Constants.AvailableCouponsList} is at or under reprovision count of {policy.ReprovisionTriggerCount}.");
+
+                    await CreateAndAllocateCoupons(context, loyaltyPointsEntity);
+                    if (context.IsNullOrHasErrors())
+                    {
+                        return;
+                    }
+
                     await CopyCouponsToList(context, loyaltyPointsEntity, list);
-
+                    if (context.IsNullOrHasErrors())
+                    {
+                        return;
+                    }
+                    loyaltyPointsEntity.IsLocked = false;
                     await _persistEntityCommand.Process(context.CommerceContext, loyaltyPointsEntity);
                     await _persistEntityCommand.Process(context.CommerceContext, list);
                 }
             });
-
-            // Note: I'm not sure if there is a way to ensure this minion is
-            // a singleton (I think that's unlikely as someone could 
-            // always spin up another minion server, so it is necessary to
-            // add the coupons to the coupon list inside a transaction,
-            // to avoid duplicate insertions.
             
-            // TODO Discuss deadlock avoidance patterns with Rob.
 
             return arg;
         }
+
+        
 
         private async Task<ManagedList> EnsureList(CommercePipelineExecutionContext context, string listName)
         {
             ManagedList list = await _getManagedListCommand.Process(context.CommerceContext, listName);
             if (list == null)
             {
-                context.Logger.LogInformation($"{this.Name}: List {listName} not found. Creating it.");
+                context.Logger.LogDebug($"{this.Name}: List {listName} not found. Creating it.");
                 list = await _createManagedListCommand.Process(context.CommerceContext, listName);
             }
 
@@ -114,24 +144,24 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         private async Task CopyCouponsToList(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity, ManagedList targetList)
         {
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
-            string sourceListName = $"promotion-{policy.CouponPrefix}-{entity.SequenceNumber}-unallocatedcoupons";
+            string sourceListName = $"promotion-{policy.CouponPrefix}-{entity.SequenceNumber}-allocatedcoupons";
             var coupons = await _getEntitiesInListCommand.Process(context.CommerceContext,
                 sourceListName, 0,
                 policy.CouponBlockSize);
             await _addListEntitiesPipeline.Run(new ListEntitiesArgument(coupons, targetList.Name), context);
         }
 
-        
-
-        private async Task AddCoupons(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity)
+        private async Task CreateAndAllocateCoupons(CommercePipelineExecutionContext context, LoyaltyPointsEntity entity)
         {
             var policy = context.GetPolicy<LoyaltyPointsPolicy>();
             entity.SequenceNumber++;
             string suffix = entity.SequenceNumber.ToString();
-            var promotion = await GetPromotion(context);
+            string promotionEntityId = context.GetPolicy<LoyaltyPointsPolicy>().LoyaltyPointPromotion;
+
+            var promotion = await this._findEntityCommand.Process(context.CommerceContext, typeof(Promotion), promotionEntityId) as Promotion;
             if (promotion == null)
             {
-                context.Abort($"{this.Name}: Unable to generate LoyaltyPoints promotion.", context);
+                await context.AbortWithError("Unable to find promotion {0}.", "PromotionNotFound", promotionEntityId);
                 return;
             }
        
@@ -141,23 +171,29 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 policy.CouponPrefix,
                 suffix,
                 policy.CouponBlockSize);
-            
-            // await _persistEntityCommand.Process(context.CommerceContext, promotion);
-            // TODO Remove above line if code works without saving entity. Judging by the pipeline block list, it should not be needed.
-            
+            if (context.IsNullOrHasErrors())
+            {
+                return;
+            }
+
+            string privateCouponGroupId = $"{CommerceEntity.IdPrefix<PrivateCouponGroup>()}{policy.CouponPrefix}-{suffix}";
+            var privateCouponGroup = await _findEntityCommand.Process(context.CommerceContext,
+                typeof(PrivateCouponGroup),
+                privateCouponGroupId) as PrivateCouponGroup;
+
+            if (privateCouponGroup == null)
+            {
+                await context.AbortWithError("Unable to find PrivateCouponGroup { 0}.", "PrivateCouponGroupNotFound", privateCouponGroupId);
+                return;
+            }
+
+            // Coupons must be in allocated to be usable by customers.
+            await _newCouponAllocationCommand.Process(context.CommerceContext, promotion, privateCouponGroup,
+                policy.CouponBlockSize);
+
+
         }
 
-        private async Task<Promotion> GetPromotion(CommercePipelineExecutionContext context)
-        {
-            string promotionEntityId = context.GetPolicy<LoyaltyPointsPolicy>().LoyaltyPointPromotion;
-            var promotion = await this._findEntityCommand.Process(context.CommerceContext, typeof(Promotion), promotionEntityId) as Promotion;
-            if (promotion == null)
-            {
-                // By adding a message with type "Error" to the CommerceContext we will force the transaction to get rolled back.
-                context.CommerceContext.AddMessage(new CommandMessage{Code = context.GetPolicy<KnownResultCodes>().Error, Text = $"{Name}: Promotion {promotionEntityId} not found."});
-            }
-            return promotion;
-            
-        }
+        
     }
 }
