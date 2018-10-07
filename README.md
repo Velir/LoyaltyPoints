@@ -13,12 +13,12 @@
 ## Design Highlights
 
 * Pipelines for component creation can be replaced:
-    * Replace MakeComponentBlock to add your own component type
-    * Replace GetListPriceAmountBlock to use different logic to obtain basis price
-* Policy can be replaced by subclass to modify ValidateOrder logic
-* Minions use transactions to ensure coupons, customers, and orders are in a consistent state
-* Helper methods to register and detect errors.  Illustrates how to register errors to trigger transactions rollback.
-* Commerce Excelerator rendering to display coupons to user. Follows CXA patterns, illustrates how to transmit data from engine to storefront using EntityViews.
+    * Replace [MakeComponentBlock](src/Plugin.LoyaltyPoints/ConfigureSitecore.cs#L42-L43) to add your own component type
+    * Replace [GetListPriceAmountBlock](src/Plugin.LoyaltyPoints/ConfigureSitecore.cs#L39-L40) to use different logic to obtain basis price
+* Policy can be replaced by [subclass](src/Plugin.LoyaltyPoints/Policies/LoyaltyPointsPolicy.cs#L98-L113) to modify ValidateOrder logic
+* Minions use [transactions](src/Plugin.LoyaltyPoints/Pipelines/Blocks/CreateCouponsBlock.cs#L66) to ensure coupons, customers, and orders are in a consistent state
+* Context [extensions](src/Plugin.LoyaltyPoints/Helpers/ExecutionContextExtensions.cs) to register and detect errors.  Illustrates how to register errors to trigger transactions rollback
+* Commerce Excelerator [view](src/Feature.LoyaltyPoints.Website/Views/UnusedCoupons/UnusedCoupons.cshtml) to display coupons to user. Follows CXA patterns, processor [GetAccountLoyaltyCoupons](src/Feature.LoyaltyPoints.Website/Pipelines/GetAccountLoyaltyCoupons.cs) illustrates how to transmit data from engine to storefront using EntityViews.
 
 ## Installation instructions
 
