@@ -15,12 +15,15 @@ namespace Feature.LoyaltyPoints.Website.Models.JsonResults
 
         public CouponsBaseJsonResult(IStorefrontContext storefrontContext) : base(storefrontContext)
         {
-            
+            Coupons = new List<Coupon>();
         }
 
         public virtual void Initialize(ManagerResponse<GetCouponsResult, IEnumerable<Coupon>> managerResponse)
         {
-            Coupons = managerResponse.Result.Where(c=>!c.IsApplied).ToList();
+            if (managerResponse?.Result != null)
+            {
+                Coupons = managerResponse.Result.Where(c=>!c.IsApplied).ToList();
+            }
         }
  
     }
