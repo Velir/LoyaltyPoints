@@ -39,19 +39,20 @@ namespace Feature.LoyaltyPoints.Website.Pipelines
             Container container = this.GetContainer(request.Shop.Name, string.Empty, request.CustomerId, "", args.Request.CurrencyCode, new DateTime?());
 
 
-            EntityView customerView = this.GetEntityView(container, request.CustomerId, string.Empty, "LoyaltyCoupons", string.Empty, result);
+            EntityView entityView = this.GetEntityView(container, request.CustomerId, string.Empty, "LoyaltyCoupons", string.Empty, result);
 
-            if (!result.Success)
+            if (result == null || result.Success == false)
+            {
                 return;
-            var couponList = customerView.ChildViews.OfType<EntityView>().Select(GetCoupon).ToList();
-       
-            //TODO Get Coupon entities, and use that to determine whether they have been used, what there code is, and when they were issued.
-            
+            }
+
+            var couponList = entityView.ChildViews.OfType<EntityView>().Where(v=>v.Name=="Coupon").Select(ConvertEntityToCoupon).ToList();
+          
 
             result.Coupons = couponList;  
         }
 
-        private Coupon GetCoupon(EntityView ev)
+        private Coupon ConvertEntityToCoupon(EntityView ev)
         {
             return new Coupon(ev);
         }
