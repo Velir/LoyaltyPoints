@@ -67,7 +67,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                 {
                     new ViewProperty
                     {
-                        DisplayName=Name="Code",
+                        Name="Code",
+                        DisplayName="Code",
                         IsReadOnly = true,
                         UiType = "String",
                         RawValue = coupon.Code,
@@ -76,7 +77,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     },
                     new ViewProperty
                     {
-                        DisplayName=Name="Date Earned",
+                        Name="Date Earned",
+                        DisplayName="Date Earned",
                         IsReadOnly = true,
                         UiType = "DateTime",
                         RawValue = coupon.DateCreated,
@@ -85,7 +87,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     },
                     new ViewProperty
                     {
-                        DisplayName=Name="Is Applied",
+                        Name="Is Applied",
+                        DisplayName="Is Applied",
                         IsReadOnly = true,
                         UiType = "Boolean",
                         RawValue = coupon.UsageCount>0,
@@ -94,7 +97,8 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     },
                     new ViewProperty
                     {
-                        DisplayName=Name="Date Used",
+                        Name="Date Used",
+                        DisplayName="Date Used",
                         IsReadOnly = true,
                         UiType = "DateTime",
                         RawValue = coupon.UsageCount>0,
