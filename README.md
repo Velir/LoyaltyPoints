@@ -1,35 +1,33 @@
 # Velir.Plugin.LoyaltyPoints
 
-*Important*: This is demonstration code, and is not intended for use in a a production environment.
+*Important*: This is demonstration code, and is not intended for use in a a production environment. 
 
-## Developer notes
+## Functionality Highlights
 
-Current task: Build pipeline to generate coupons
+* API to create loyalty points
+* Addition of loyatly points to product view
+* Minions to manage coupon creation, customer point totals, and coupon awards
+* xConnect event registration
+* Unused Coupons report on storefront
 
-## Pipelines
+## Design Highlights
 
-### Process Customer pipeline
+* Pipelines for component creation can be replaced:
+    * Replace MakeComponentBlock to add your own component type
+    * Replace GetListPriceAmountBlock to use different logic to obtain basis price
+* Policy can be replaced by subclass to modify ValidateOrder logic
+* Minions use transactions to ensure coupons, customers, and orders are in a consistent state
+* Helper methods to register and detect errors.  Illustrates how to register errors to trigger transactions rollback.
+* Commerce Excelerator rendering to display coupons to user. Follows CXA patterns, illustrates how to transmit data from engine to storefront using EntityViews.
 
-1. Is customer entitled to coupon?
-2. Allocate coupon pipeline.
-3. Mark LPs applied.
-4. Allocate coupon.
-5. Mark LPs as applied. 
-6. Persist transaction.
-7. Send Live Event.
+## Installation instructions
 
-
-### Allocate coupon pipeline
-
-1. Get current coupon block.
-2. Allocate coupon. Return coupon code.
-3. If coupon block does not exist, call ProvisionCouponBlock.
-
-### Provision Coupon pipeline
-
-1. Copy template promotion.
-2. Get next sequence number from entity, lock entity.
-3. Generate coupons.
-4. Approve promotion.
-5. Update entity: sequence number, current promotion, unlock.
+* Build on top of Sitecore Experience Commerce 9.01. 
+* Add Plugin as dependency of Website project in SDK.
+* Run engine from SDK as described in Sitecore Commerce Developer Guide. 
+* Deploy Website project to storefront.
+* IN PROGRESS Load package to add renderings and goals.
+* In Commerce Promotions screen, create a promotion group called "X", and a promtion callsed "Y" with desired benefit. Attach promoton book to Habitat catalog.
+    * Note: The name of this promotion can be changed via the policy. TODO
+* Set the following values in the Loyalty Points policy: TODO
 
