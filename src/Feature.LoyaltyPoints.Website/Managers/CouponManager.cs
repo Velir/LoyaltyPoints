@@ -7,20 +7,17 @@ using Sitecore.Commerce.Services.Customers;
 using Sitecore.Commerce.XA.Foundation.Common;
 using Sitecore.Commerce.XA.Foundation.Connect;
 using Sitecore.Commerce.XA.Foundation.Connect.Managers;
-using Sitecore.Commerce.XA.Foundation.Connect.Providers;
 using Sitecore.Diagnostics;
 
 namespace Feature.LoyaltyPoints.Website.Managers
 {
     public class CouponManager : ICouponManager
     {
-        private readonly IConnectServiceProvider _connectServiceProvider;
         private readonly CouponsServiceProvider _couponsServiceProvider;
 
 
-        public CouponManager(IConnectServiceProvider connectServiceProvider, CouponsServiceProvider couponsServiceProvider)
+        public CouponManager(CouponsServiceProvider couponsServiceProvider)
         {
-            _connectServiceProvider = connectServiceProvider;
             _couponsServiceProvider = couponsServiceProvider;
         }
 
@@ -31,18 +28,16 @@ namespace Feature.LoyaltyPoints.Website.Managers
 
             string customerId = visitorContext.CustomerId;
             
-            GetCouponsResult coupons = _couponsServiceProvider.GetCustomerCoupons(new GetCouponsRequest(customerId, storefront.CurrentStorefront.ShopName));
+            GetCouponsResult serviceResult = _couponsServiceProvider.GetCustomerCoupons(new GetCouponsRequest(customerId, storefront.CurrentStorefront.ShopName));
 
-            if (coupons?.Coupons != null && coupons.Coupons.Any())
+            if (serviceResult?.Coupons != null && serviceResult.Coupons.Any())
             {
-                GetCouponsResult serviceProviderResult = coupons;
-                return new ManagerResponse<GetCouponsResult, IEnumerable<Coupon>>(serviceProviderResult, serviceProviderResult.Coupons);
+                return new ManagerResponse<GetCouponsResult, IEnumerable<Coupon>>(serviceResult, serviceResult.Coupons);
             }
-
             
-            GetCouponsResult serviceProviderResult1 = new GetCouponsResult();
-            serviceProviderResult1.Success = false;
-            return new ManagerResponse<GetCouponsResult, IEnumerable<Coupon>>(serviceProviderResult1, null);
+            serviceResult = serviceResult ?? new GetCouponsResult();
+            serviceResult.Success = false;
+            return new ManagerResponse<GetCouponsResult, IEnumerable<Coupon>>(serviceResult, null);
         }
     }
 }
