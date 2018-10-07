@@ -15,16 +15,10 @@ namespace Feature.LoyaltyPoints.Website.Repositories
     {
 
         private readonly ICouponManager _manager;
-        private readonly IStorefrontContext _storefrontContext;
-        private readonly IVisitorContext _visitorContext;
 
-        public CouponRepository(ICouponManager manager, IStorefrontContext storefrontContext,
-            IVisitorContext visitorContext)
+        public CouponRepository(ICouponManager manager)
         {
-
             _manager = manager;
-            _storefrontContext = storefrontContext;
-            _visitorContext = visitorContext;
         }
 
         public LoyaltyCouponsRenderingModel GetUnusedCouponsRenderingModel()
@@ -35,7 +29,7 @@ namespace Feature.LoyaltyPoints.Website.Repositories
         public CouponsBaseJsonResult GetUnusedCoupons(IStorefrontContext storefrontContext, IVisitorContext visitorContext)
         {
             var result = new CouponsBaseJsonResult(storefrontContext);
-            result.Initialize(_manager.GetCoupons(storefrontContext,_visitorContext));
+            result.Initialize(_manager.GetCoupons(storefrontContext,visitorContext));
             result.Success = true;
             return result;
         }
