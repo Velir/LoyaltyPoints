@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CommerceOps.Sitecore.Commerce.Engine;
-
+using Feature.LoyaltyPoints.Website.Models;
 using Feature.LoyaltyPoints.Website.Pipelines;
-using Sitecore.Commerce.Plugin.Coupons;
 using Sitecore.Commerce.Services.Customers;
 using Sitecore.Commerce.XA.Foundation.Common;
 using Sitecore.Commerce.XA.Foundation.Connect;

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web;
 using Feature.LoyaltyPoints.Website.Managers;
+using Feature.LoyaltyPoints.Website.Models;
 using Sitecore.Commerce.Core;
 using Sitecore.Commerce.Engine;
 using Sitecore.Commerce.Engine.Connect.Entities;
@@ -11,7 +12,6 @@ using Sitecore.Commerce.Engine.Connect.Pipelines;
 using Sitecore.Commerce.Entities;
 using Sitecore.Commerce.EntityViews;
 using Sitecore.Commerce.Pipelines;
-using Sitecore.Commerce.Plugin.Coupons;
 using Sitecore.Commerce.Services;
 using Sitecore.Commerce.Services.Customers;
 using Sitecore.Diagnostics;
@@ -43,12 +43,17 @@ namespace Feature.LoyaltyPoints.Website.Pipelines
 
             if (!result.Success)
                 return;
-            var couponList = customerView.ChildViews.Select(v => new Coupon {Code = v.Name}).ToList();
+            var couponList = customerView.ChildViews.OfType<EntityView>().Select(GetCoupon).ToList();
        
             //TODO Get Coupon entities, and use that to determine whether they have been used, what there code is, and when they were issued.
             
 
             result.Coupons = couponList;  
+        }
+
+        private Coupon GetCoupon(EntityView ev)
+        {
+            return new Coupon(ev);
         }
     }
 }

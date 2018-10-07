@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Sitecore.Commerce.Plugin.Coupons;
+using Feature.LoyaltyPoints.Website.Models;
 using Sitecore.Commerce.Services;
 
 namespace Feature.LoyaltyPoints.Website.Managers

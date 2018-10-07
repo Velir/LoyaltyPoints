@@ -166,9 +166,6 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
         /// Create a new promotion so that coupons can be provisioned.
         /// Coupons cannot be added to an approved promotion.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="promotionName"></param>
-        /// <returns></returns>
         private async Task<Promotion> GeneratePromotion(CommercePipelineExecutionContext context, string promotionName)
         {
             string rootPromotion = context.GetPolicy<LoyaltyPointsPolicy>().TemplatePromotionFriendlyId;

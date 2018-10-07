@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Feature.LoyaltyPoints.Website.Managers;
-using Sitecore.Commerce.Plugin.Coupons;
+ 
 using Sitecore.Commerce.XA.Foundation.Common;
 using Sitecore.Commerce.XA.Foundation.Common.Models.JsonResults;
 using Sitecore.Commerce.XA.Foundation.Connect;
@@ -20,7 +20,7 @@ namespace Feature.LoyaltyPoints.Website.Models.JsonResults
 
         public virtual void Initialize(ManagerResponse<GetCouponsResult, IEnumerable<Coupon>> managerResponse)
         {
-            Coupons = managerResponse.Result.ToList();
+            Coupons = managerResponse.Result.Where(c=>!c.IsApplied).ToList();
         }
  
     }

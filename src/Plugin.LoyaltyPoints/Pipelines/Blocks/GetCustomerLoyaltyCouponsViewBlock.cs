@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.OData.Formatter;
 using Plugin.LoyaltyPoints.Components;
 using Plugin.LoyaltyPoints.Models;
 using Sitecore.Commerce.Core;
@@ -41,7 +42,7 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
                     return entityView;
                 }
 
-                IEnumerable<CouponModel> models = await Task.WhenAll(customer.GetComponent<LoyaltySummary>().CouponEntities.Select(id => GetCouponModel(id, context)));
+                IEnumerable<EntityView> models = await Task.WhenAll(customer.GetComponent<LoyaltySummary>().CouponEntities.Select(id => GetCouponView(id, context)));
 
 
                 entityView.ChildViews.AddRange(models);
@@ -50,23 +51,63 @@ namespace Plugin.LoyaltyPoints.Pipelines.Blocks
             return entityView;
         }
 
-        private async Task<CouponModel> GetCouponModel(string id, CommercePipelineExecutionContext context)
+        private async Task<EntityView> GetCouponView(string id, CommercePipelineExecutionContext context)
         {
             var coupon = (Coupon) await _findEntity.Run(new FindEntityArgument(typeof(Coupon), id), context);
             if (coupon == null)
             {
                 return null;
             }
-
-            return new CouponModel
+            var view = new EntityView
             {
+                DisplayName = "Coupon",
                 EntityId = coupon.Id,
-                Name = coupon.Code, 
-                Code = coupon.Code,
-                DateEarned = coupon.DateCreated,
-                IsApplied = coupon.UsageCount > 0,  //TODO Determine how system marks a private coupon that has been used.
-                DateUsed = coupon.UsageCount > 0 ? coupon.DateUpdated : null //TODO See if there is a more reliable date to use (e.g. a date on an "Applied" policy).
+                Name = "Coupon",
+                Properties = new List<ViewProperty>
+                {
+                    new ViewProperty
+                    {
+                        DisplayName=Name="Code",
+                        IsReadOnly = true,
+                        UiType = "String",
+                        RawValue = coupon.Code,
+                        OriginalType = typeof(string).ToString(),
+                        Value =  coupon.Code
+                    },
+                    new ViewProperty
+                    {
+                        DisplayName=Name="Date Earned",
+                        IsReadOnly = true,
+                        UiType = "DateTime",
+                        RawValue = coupon.DateCreated,
+                        OriginalType = typeof(DateTimeOffset?).ToString(),
+                        Value =  coupon.DateCreated.HasValue? coupon.DateCreated.Value.ToString(): ""
+                    },
+                    new ViewProperty
+                    {
+                        DisplayName=Name="Is Applied",
+                        IsReadOnly = true,
+                        UiType = "Boolean",
+                        RawValue = coupon.UsageCount>0,
+                        OriginalType = typeof(bool).ToString(),
+                        Value =  (coupon.UsageCount>0).ToString()
+                    },
+                    new ViewProperty
+                    {
+                        DisplayName=Name="Date Used",
+                        IsReadOnly = true,
+                        UiType = "DateTime",
+                        RawValue = coupon.UsageCount>0,
+                        OriginalType = typeof(DateTimeOffset?).ToString(),
+                        Value =  coupon.DateUpdated.HasValue? coupon.DateUpdated.Value.ToString(): ""
+                    }
+                }
+
+
             };
+            return view;
+
+
         }
     }
 }
